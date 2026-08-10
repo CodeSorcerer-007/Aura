@@ -1,5 +1,6 @@
 appId: com.aura.productivity
 productName: Aura
+executableName: Aura
 copyright: "Copyright © 2025 Aura"
 
 directories:
@@ -26,7 +27,6 @@ nsis:
   allowElevation: true
   installerIcon: electron/assets/icon.ico
   uninstallerIcon: electron/assets/icon.ico
-  installerHeader: electron/assets/icon.ico
   createDesktopShortcut: true
   createStartMenuShortcut: true
   shortcutName: Aura

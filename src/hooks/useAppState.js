@@ -20,6 +20,7 @@ export function useAppState() {
     
     const isLoading = taskLoading;
     const [initialLoadDone, setInitialLoadDone] = useState(false);
+    const [timeOfDay, setTimeOfDay] = useState('morning');
 
     const allCategories = useMemo(() => ({...defaultCategories, ...customCategories}), [customCategories]);
     
@@ -424,6 +425,6 @@ export function useAppState() {
         setTaskDependency, addAttachmentToTask, deleteAttachmentFromTask, saveTemplate, handlePlantSeed, finishPlanting,
         reorderTask, updateTaskOrderAndSection, toggleSubtask, handleFocusComplete, handleExport, handleImport,
         isMorningRitualOpen, setIsMorningRitualOpen, isQuickCaptureOpen, setIsQuickCaptureOpen,
-        handleSetMITs, logDistraction
+        handleSetMITs, logDistraction, timeOfDay, setTimeOfDay
     };
 }

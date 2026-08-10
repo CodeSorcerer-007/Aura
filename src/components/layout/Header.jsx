@@ -3,8 +3,8 @@ import { motion } from 'framer-motion';
 import { WindIcon, Share2Icon, SearchIcon, SettingsIcon, ZapIcon } from '../icons/Icons';
 
 export const Header = ({ momentumProgress, onSettingsClick, onSearchClick, onMindfulClick, dailyQuote, onShare }) => (
-    <motion.header initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="text-center mb-8 relative">
-        <div className="absolute top-0 left-0 flex items-center gap-4">
+    <motion.header initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="text-center mb-8 relative pt-4" style={{ WebkitAppRegion: 'drag' }}>
+        <div className="absolute top-4 left-0 flex items-center gap-4" style={{ WebkitAppRegion: 'no-drag' }}>
              <button onClick={onMindfulClick} className="bg-transparent text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors" title="Mindful Minute">
                 <WindIcon className="w-6 h-6"/>
             </button>
@@ -12,7 +12,7 @@ export const Header = ({ momentumProgress, onSettingsClick, onSearchClick, onMin
                 <Share2Icon className="w-6 h-6"/>
             </button>
         </div>
-        <div className="absolute top-0 right-0 flex items-center gap-4">
+        <div className="absolute top-4 right-0 flex items-center gap-4" style={{ WebkitAppRegion: 'no-drag' }}>
           <button onClick={onSearchClick} className="bg-transparent text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"><SearchIcon className="w-6 h-6"/></button>
           <button onClick={onSettingsClick} className="bg-transparent text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"><SettingsIcon className="w-6 h-6"/></button>
         </div>

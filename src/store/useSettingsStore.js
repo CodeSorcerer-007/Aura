@@ -5,7 +5,7 @@ import { achievementsList } from '../utils/helpers';
 
 export const useSettingsStore = create((set, get) => ({
     theme: 'dark',
-    customThemes: {},
+    customThemes: [],
     soundEffectsEnabled: true,
     autoArchiveEnabled: false,
     notificationsEnabled: false,
@@ -45,7 +45,7 @@ export const useSettingsStore = create((set, get) => ({
 
             set({
                 theme: savedTheme || 'dark',
-                customThemes: savedCustomThemes || {},
+                customThemes: savedCustomThemes || [],
                 grove: savedGrove || [],
                 stats: savedStats || { completedCount: 0, streak: 1, lastCompletedDate: null, totalFocusMinutes: 0 },
                 unlockedAchievements: savedAchievements || [],

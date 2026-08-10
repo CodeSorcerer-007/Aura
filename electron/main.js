@@ -39,8 +39,13 @@ function createMainWindow() {
         height: 800,
         minWidth: 800,
         minHeight: 600,
-        frame: true,
-        titleBarStyle: 'default',
+        titleBarStyle: 'hidden',
+        titleBarOverlay: {
+            color: '#000000',
+            symbolColor: '#ffffff',
+            height: 32
+        },
+        autoHideMenuBar: true,
         icon: path.join(__dirname, 'assets', 'icon.ico'),
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'),
@@ -57,6 +62,7 @@ function createMainWindow() {
         mainWindow.webContents.openDevTools();
     } else {
         mainWindow.loadFile(path.join(__dirname, '..', 'dist', 'index.html'));
+        mainWindow.webContents.openDevTools();
     }
 
     // Show window once content is loaded
@@ -117,8 +123,9 @@ function createQuickCaptureWindow() {
 
 // ─── System Tray ─────────────────────────────────────────────────────────────
 function createTray() {
-    const trayIconPath = path.join(__dirname, 'assets', 'tray-icon.png');
-    tray = new Tray(trayIconPath);
+    try {
+        const trayIconPath = path.join(__dirname, 'assets', 'icon.ico');
+        tray = new Tray(trayIconPath);
 
     const contextMenu = Menu.buildFromTemplate([
         {
@@ -154,6 +161,9 @@ function createTray() {
             mainWindow.focus();
         }
     });
+    } catch (err) {
+        console.error('Failed to create system tray:', err);
+    }
 }
 
 // ─── Shutdown Notification ───────────────────────────────────────────────────

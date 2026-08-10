@@ -2,6 +2,8 @@
   "name": "aura-app",
   "private": true,
   "version": "1.0.0",
+  "description": "A privacy-first, offline mindful task manager",
+  "author": "Aura",
   "main": "electron/main.js",
   "scripts": {
     "dev": "vite",

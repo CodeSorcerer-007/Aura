@@ -69,5 +69,5 @@ export default defineConfig({
     port: 3000,
     host: true
   },
-  base: process.env.ELECTRON ? './' : '/',
+  base: './',
 });
