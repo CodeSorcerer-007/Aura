@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="public/pwa-512x512.png" width="120" alt="Aura Logo" />
+  <img src="Logo.png" width="120" alt="Aura Logo" />
   
   # 🌿 Aura v2.0
   **Mindful Productivity for Windows**
