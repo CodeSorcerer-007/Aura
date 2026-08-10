@@ -144,7 +144,7 @@ export const FlowView = ({
 
     return (
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.5 }} className="max-w-2xl mx-auto">
-            <DayDatePanel />
+            <DayDatePanel tasks={tasks} />
             <FilterBar activeFilter={activeFilter} setActiveFilter={setActiveFilter} categories={categories} allTags={allTags}/>
             <div className="space-y-10 mt-6">
                 {pinnedTasks.length > 0 && (

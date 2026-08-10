@@ -78,15 +78,38 @@ export const JournalView = ({ journalEntries, setJournalEntries, completedTasks 
                 </div>
                 <div>
                     <h3 className="font-bold mb-3">Completed on {formatDate(selectedDate)}</h3>
-                    <div className="space-y-2">
+                    <div className="space-y-2 mb-5">
                         {tasksForSelectedDate.length > 0 ? tasksForSelectedDate.map(task => (
                             <div key={task.id} className="p-2 bg-[var(--color-bg)] rounded-md text-sm text-[var(--color-text-secondary)]">
-                                {task.text}
+                                ✅ {task.text}
                             </div>
                         )) : (
                             <p className="text-sm text-[var(--color-text-secondary)]">No tasks completed on this day.</p>
                         )}
                     </div>
+
+                    {/* Distraction Log */}
+                    {(() => {
+                        const entryForDay = journalEntries.find(e => e.date === selectedDate);
+                        const distractions = entryForDay?.distractions || [];
+                        if (distractions.length === 0) return null;
+                        return (
+                            <div>
+                                <h3 className="font-bold mb-2 text-amber-400/80">⚡ Distractions ({distractions.length})</h3>
+                                <div className="space-y-1">
+                                    {distractions.map((d, i) => (
+                                        <div key={i} className="p-2 bg-amber-500/5 border border-amber-500/10 rounded-md text-xs text-[var(--color-text-secondary)] flex items-start gap-2">
+                                            <span className="opacity-50 flex-shrink-0">{new Date(d.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                            <span>{d.text}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                                <p className="text-xs text-[var(--color-text-secondary)]/50 mt-2">
+                                    Awareness of distractions builds focus over time.
+                                </p>
+                            </div>
+                        );
+                    })()}
                 </div>
             </div>
         </motion.div>

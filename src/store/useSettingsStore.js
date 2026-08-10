@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import * as Tone from 'tone';
-import { db } from '../utils/db';
-import { defaultThemes, achievementsList } from '../utils/helpers';
+import { getDBItem, setDBItem } from '../utils/db';
+import { achievementsList } from '../utils/helpers';
 
 export const useSettingsStore = create((set, get) => ({
     theme: 'dark',
@@ -13,6 +13,7 @@ export const useSettingsStore = create((set, get) => ({
     grove: [],
     stats: { completedCount: 0, streak: 1, lastCompletedDate: null, totalFocusMinutes: 0 },
     unlockedAchievements: [],
+    hasLaunched: false,
     backupDirectoryHandle: null,
 
     // Initial load from IndexedDB
@@ -27,17 +28,19 @@ export const useSettingsStore = create((set, get) => ({
                 savedSound,
                 savedAutoArchive,
                 savedNotifications,
-                savedShutdown
+                savedShutdown,
+                savedHasLaunched
             ] = await Promise.all([
-                db.getTheme(),
-                db.getCustomThemes(),
-                db.getGrove(),
-                db.getStats(),
-                db.getUnlockedAchievements(),
-                db.getSoundEffectsEnabled(),
-                db.getAutoArchiveEnabled(),
-                db.getNotificationsEnabled(),
-                db.getShutdownTime()
+                getDBItem('aura-theme'),
+                getDBItem('aura-custom-themes'),
+                getDBItem('aura-grove'),
+                getDBItem('aura-stats'),
+                getDBItem('aura-achievements'),
+                getDBItem('aura-sound-effects'),
+                getDBItem('aura-auto-archive'),
+                getDBItem('aura-notifications-enabled'),
+                getDBItem('aura-shutdown-time'),
+                getDBItem('aura-has-launched')
             ]);
 
             set({
@@ -49,7 +52,8 @@ export const useSettingsStore = create((set, get) => ({
                 soundEffectsEnabled: savedSound ?? true,
                 autoArchiveEnabled: savedAutoArchive ?? false,
                 notificationsEnabled: savedNotifications ?? false,
-                shutdownTime: savedShutdown || '18:00'
+                shutdownTime: savedShutdown || '18:00',
+                hasLaunched: savedHasLaunched || false
             });
         } catch (error) {
             console.error('Error loading settings from IndexedDB:', error);
@@ -58,35 +62,77 @@ export const useSettingsStore = create((set, get) => ({
 
     setTheme: (newTheme) => {
         set({ theme: newTheme });
-        db.saveTheme(newTheme);
+        setDBItem('aura-theme', newTheme);
+    },
+
+    setHasLaunched: (launched) => {
+        set({ hasLaunched: launched });
+        setDBItem('aura-has-launched', launched);
+    },
+
+    setGrove: (updater) => {
+        set((state) => {
+            const next = typeof updater === 'function' ? updater(state.grove) : updater;
+            setDBItem('aura-grove', next);
+            return { grove: next };
+        });
+    },
+    
+    incrementGroveGrowth: () => {
+        set((state) => {
+            const latestTreeIndex = state.grove.findLastIndex(tree => tree.growthPoints < tree.maxGrowth);
+            if (latestTreeIndex > -1) {
+                const newGrove = [...state.grove];
+                newGrove[latestTreeIndex] = { ...newGrove[latestTreeIndex], growthPoints: newGrove[latestTreeIndex].growthPoints + 1 };
+                setDBItem('aura-grove', newGrove);
+                return { grove: newGrove };
+            }
+            return state;
+        });
+    },
+
+    setStats: (updater) => {
+        set((state) => {
+            const next = typeof updater === 'function' ? updater(state.stats) : updater;
+            setDBItem('aura-stats', next);
+            return { stats: next };
+        });
+    },
+
+    setUnlockedAchievements: (updater) => {
+        set((state) => {
+            const next = typeof updater === 'function' ? updater(state.unlockedAchievements) : updater;
+            setDBItem('aura-achievements', next);
+            return { unlockedAchievements: next };
+        });
     },
 
     setCustomThemes: (updater) => {
         set((state) => {
             const next = typeof updater === 'function' ? updater(state.customThemes) : updater;
-            db.saveCustomThemes(next);
+            setDBItem('aura-custom-themes', next);
             return { customThemes: next };
         });
     },
 
     setSoundEffectsEnabled: (enabled) => {
         set({ soundEffectsEnabled: enabled });
-        db.saveSoundEffectsEnabled(enabled);
+        setDBItem('aura-sound-effects', enabled);
     },
 
     setAutoArchiveEnabled: (enabled) => {
         set({ autoArchiveEnabled: enabled });
-        db.saveAutoArchiveEnabled(enabled);
+        setDBItem('aura-auto-archive', enabled);
     },
 
     setNotificationsEnabled: (enabled) => {
         set({ notificationsEnabled: enabled });
-        db.saveNotificationsEnabled(enabled);
+        setDBItem('aura-notifications-enabled', enabled);
     },
 
     setShutdownTime: (time) => {
         set({ shutdownTime: time });
-        db.saveShutdownTime(time);
+        setDBItem('aura-shutdown-time', time);
     },
 
     playSoundEffect: (effect) => {

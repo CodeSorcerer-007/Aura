@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { motion } from 'framer-motion';
+import { useFocusTrap } from '../../hooks/useFocusTrap';
 
 export const CommandPalette = ({ isOpen, onClose, commands }) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedIndex, setSelectedIndex] = useState(0);
     const inputRef = useRef(null);
+    const trapRef = useFocusTrap(isOpen);
 
     useEffect(() => {
         if(isOpen) {
@@ -43,7 +45,7 @@ export const CommandPalette = ({ isOpen, onClose, commands }) => {
 
     return (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/80 backdrop-blur-lg z-[90] flex items-start justify-center pt-20 p-4">
-            <motion.div initial={{ scale: 0.9, y: -20 }} animate={{ scale: 1, y: 0 }} className="w-full max-w-lg bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-2xl overflow-hidden shadow-2xl">
+            <motion.div ref={trapRef} initial={{ scale: 0.9, y: -20 }} animate={{ scale: 1, y: 0 }} className="w-full max-w-lg bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-2xl overflow-hidden shadow-2xl">
                 <input
                     ref={inputRef}
                     type="text"

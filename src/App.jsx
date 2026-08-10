@@ -29,6 +29,8 @@ import { ArchiveModal } from './components/modals/ArchiveModal';
 import { ShareSummaryModal } from './components/modals/ShareSummaryModal';
 import { CommandPalette } from './components/modals/CommandPalette';
 import { WinModal } from './components/modals/WinModal';
+import { MorningRitualModal } from './components/modals/MorningRitualModal';
+import { QuickCaptureOverlay } from './components/modals/QuickCaptureOverlay';
 
 export default function App() {
     const {
@@ -48,7 +50,9 @@ export default function App() {
         requestNotificationPermission, handleSetNotifications, showNotification, playSoundEffect, addTask,
         toggleTask, togglePin, handleSkipWin, saveWin, deleteTask, archiveTask, restoreTask, saveTaskDetail,
         setTaskDependency, addAttachmentToTask, deleteAttachmentFromTask, saveTemplate, handlePlantSeed, finishPlanting,
-        reorderTask, updateTaskOrderAndSection, toggleSubtask, handleFocusComplete, handleExport, handleImport
+        reorderTask, updateTaskOrderAndSection, toggleSubtask, handleFocusComplete, handleExport, handleImport,
+        isMorningRitualOpen, setIsMorningRitualOpen, isQuickCaptureOpen, setIsQuickCaptureOpen,
+        handleSetMITs, logDistraction
     } = useAppState();
 
     return (
@@ -95,7 +99,7 @@ export default function App() {
                     <BottomNav currentView={currentView} setCurrentView={setCurrentView} />
                     <AnimatePresence>{isSettingsOpen && <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} theme={theme} setTheme={setTheme} customCategories={customCategories} setCustomCategories={setCustomCategories} allThemes={allThemes} onOpenThemeCreator={() => setIsThemeCreatorOpen(true)} shutdownTime={shutdownTime} onSetShutdownTime={setShutdownTime} soundEffectsEnabled={soundEffectsEnabled} onSetSoundEffectsEnabled={setSoundEffectsEnabled} onOpenArchive={() => setIsArchiveOpen(true)} autoArchiveEnabled={autoArchiveEnabled} onSetAutoArchiveEnabled={setAutoArchiveEnabled} onExport={handleExport} onTriggerImport={() => importInputRef.current?.click()} notificationsEnabled={notificationsEnabled} onSetNotificationsEnabled={handleSetNotifications}/>}</AnimatePresence>
                     <AnimatePresence>{isPlanting && <PlantingAnimation onComplete={finishPlanting} />}</AnimatePresence>
-                    <AnimatePresence>{focusTask && <FocusView task={focusTask} onClose={() => setFocusTaskId(null)} onComplete={handleFocusComplete} />}</AnimatePresence>
+                    <AnimatePresence>{focusTask && <FocusView task={focusTask} onClose={() => setFocusTaskId(null)} onComplete={handleFocusComplete} onLogDistraction={logDistraction} />}</AnimatePresence>
                     <AnimatePresence>{winModalTaskId && <WinModal task={tasks.find(t => t.id === winModalTaskId)} onSaveWin={saveWin} onClose={() => handleSkipWin(winModalTaskId)} />}</AnimatePresence>
                     <AnimatePresence>{achievementToast && <AchievementToast achievement={achievementToast} onClose={() => setAchievementToast(null)} />}</AnimatePresence>
                     <AnimatePresence>{toastMessage && <GenericToast message={toastMessage} onClose={() => setToastMessage(null)} />}</AnimatePresence>
@@ -109,6 +113,8 @@ export default function App() {
                     <AnimatePresence><ArchiveModal isOpen={isArchiveOpen} onClose={() => setIsArchiveOpen(false)} archivedTasks={tasks.filter(t=>t.isArchived)} onRestore={restoreTask} onDelete={deleteTask} /></AnimatePresence>
                     <AnimatePresence><ShareSummaryModal isOpen={isShareSummaryOpen} onClose={() => setIsShareSummaryOpen(false)} dailyStats={dailyStats} /></AnimatePresence>
                     <AnimatePresence><CommandPalette isOpen={isCommandPaletteOpen} onClose={() => setIsCommandPaletteOpen(false)} commands={commands} /></AnimatePresence>
+                    <AnimatePresence>{isMorningRitualOpen && <MorningRitualModal isOpen={isMorningRitualOpen} tasks={tasks} onClose={() => setIsMorningRitualOpen(false)} onSetMITs={handleSetMITs} />}</AnimatePresence>
+                    <AnimatePresence>{isQuickCaptureOpen && <QuickCaptureOverlay onAddTask={addTask} onClose={() => setIsQuickCaptureOpen(false)} />}</AnimatePresence>
                     <input type="file" ref={importInputRef} onChange={handleImport} className="hidden" accept=".json" />
                 </motion.div>
             )}

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { XIcon, PaintbrushIcon, DownloadIcon, UploadIcon, ArchiveIcon } from '../icons/Icons';
+import { useFocusTrap } from '../../hooks/useFocusTrap';
 
 export const SettingsModal = ({ 
     isOpen, onClose, theme, setTheme, allThemes, 
@@ -11,6 +12,7 @@ export const SettingsModal = ({
     notificationsEnabled, onSetNotificationsEnabled, onOpenArchive 
 }) => {
     const [newCategoryName, setNewCategoryName] = useState('');
+    const trapRef = useFocusTrap(isOpen);
     
     if (!isOpen) return null;
 
@@ -29,7 +31,7 @@ export const SettingsModal = ({
                bg: bgColors[randomIndex],
                border: borderColors[randomIndex],
                text: textColors[randomIndex],
-               solid: solidColors[randomIndex],
+               solid: solidColors[randomIndex]
             }
          });
          setNewCategoryName('');
@@ -44,7 +46,7 @@ export const SettingsModal = ({
 
     return (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/80 backdrop-blur-lg z-50 flex items-center justify-center p-4">
-            <motion.div initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} className="w-full max-w-md bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-2xl p-6 overflow-y-auto max-h-[90vh]">
+            <motion.div ref={trapRef} initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} className="w-full max-w-md bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-2xl p-6 overflow-y-auto max-h-[90vh]">
                 <div className="flex justify-between items-center mb-6">
                     <h2 className="text-xl font-bold text-[var(--color-text-primary)]">Settings</h2>
                     <button onClick={onClose} className="text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]"><XIcon className="w-6 h-6"/></button>

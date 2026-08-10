@@ -1,25 +1,30 @@
 import { create } from 'zustand';
-import { db } from '../utils/db';
-import { getTodayDateString, defaultCategories, parseIntelligentDeadline } from '../utils/helpers';
+import { getDBItem, setDBItem, setFile, deleteFile } from '../utils/db';
+import { getTodayDateString, defaultCategories, parseIntelligentDeadline, getLocalString } from '../utils/helpers';
+import { useSettingsStore } from './useSettingsStore';
+import { useUIStore } from './useUIStore';
 
 export const useTaskStore = create((set, get) => ({
     tasks: [],
     templates: [],
+    journalEntries: [],
     customCategories: {},
     isLoading: true,
 
     // Initial load from IndexedDB
     loadInitialData: async () => {
         try {
-            const [savedTasks, savedTemplates, savedCategories] = await Promise.all([
-                db.getTasks(),
-                db.getTemplates(),
-                db.getCustomCategories()
+            const [savedTasks, savedTemplates, savedCategories, savedJournal] = await Promise.all([
+                getDBItem('aura-tasks'),
+                getDBItem('aura-templates'),
+                getDBItem('aura-custom-categories'),
+                getDBItem('aura-journal-entries')
             ]);
 
             set({
                 tasks: savedTasks || [],
                 templates: savedTemplates || [],
+                journalEntries: savedJournal || [],
                 customCategories: savedCategories || {},
                 isLoading: false
             });
@@ -33,12 +38,53 @@ export const useTaskStore = create((set, get) => ({
     setTasks: (updater) => {
         set((state) => {
             const nextTasks = typeof updater === 'function' ? updater(state.tasks) : updater;
-            db.saveTasks(nextTasks);
+            setDBItem('aura-tasks', nextTasks);
             return { tasks: nextTasks };
         });
     },
 
-    addTask: (taskInput) => {
+    setJournalEntries: (updater) => {
+        set((state) => {
+            const nextJournal = typeof updater === 'function' ? updater(state.journalEntries) : updater;
+            setDBItem('aura-journal-entries', nextJournal);
+            return { journalEntries: nextJournal };
+        });
+    },
+
+    logDistraction: (distractionText) => {
+        const today = new Date().toISOString().split('T')[0];
+        set((state) => {
+            const existing = state.journalEntries.find(e => e.date === today);
+            let nextJournal;
+            if (existing) {
+                nextJournal = state.journalEntries.map(e =>
+                    e.date === today
+                        ? { ...e, distractions: [...(e.distractions || []), { text: distractionText, time: new Date().toISOString() }] }
+                        : e
+                );
+            } else {
+                nextJournal = [...state.journalEntries, { date: today, content: '', distractions: [{ text: distractionText, time: new Date().toISOString() }] }];
+            }
+            setDBItem('aura-journal-entries', nextJournal);
+            return { journalEntries: nextJournal };
+        });
+    },
+
+    addTask: (taskInput, applyTemplate = null) => {
+        useSettingsStore.getState().playSoundEffect('add');
+        if (applyTemplate) { 
+            const template = get().templates.find(t => t.name === applyTemplate); 
+            if (!template) return null; 
+            const newTasks = template.tasks.map(t => ({...t, id: crypto.randomUUID(), subtasks: [], win: null, completionDate: null, notes: '', attachments: [], tags: [], isPinned: false, focusSessions: 0, isArchived: false })); 
+            
+            set((state) => {
+                const updated = [...state.tasks, ...newTasks];
+                setDBItem('aura-tasks', updated);
+                return { tasks: updated };
+            });
+            return null; 
+        }
+
         const text = typeof taskInput === 'string' ? taskInput : taskInput.text;
         if (!text || !text.trim()) return null;
 
@@ -78,7 +124,7 @@ export const useTaskStore = create((set, get) => ({
 
         set((state) => {
             const updated = [newTask, ...state.tasks];
-            db.saveTasks(updated);
+            setDBItem('aura-tasks', updated);
             return { tasks: updated };
         });
 
@@ -86,27 +132,52 @@ export const useTaskStore = create((set, get) => ({
     },
 
     toggleTask: (id) => {
+        const taskToToggle = get().tasks.find(t => t.id === id);
+        if (!taskToToggle) return;
+
+        const isCompleting = !taskToToggle.completed;
+        if (isCompleting) {
+            useSettingsStore.getState().playSoundEffect('complete');
+            useSettingsStore.getState().incrementGroveGrowth();
+            
+            if (taskToToggle.priority >= 2 && !taskToToggle.recurring) {
+                useUIStore.getState().setWinModalTaskId(id);
+            }
+        }
+
         set((state) => {
-            const updated = state.tasks.map(t => {
+            let newTasks = state.tasks.map(t => {
                 if (t.id === id) {
-                    const nowCompleted = !t.completed;
+                    if (t.recurring) {
+                        const nextDate = new Date(t.deadline || getTodayDateString());
+                        if (t.recurring.type === 'daily') nextDate.setDate(nextDate.getDate() + 1);
+                        if (t.recurring.type === 'weekly') nextDate.setDate(nextDate.getDate() + 7);
+                        if (t.recurring.type === 'monthly') nextDate.setMonth(nextDate.getMonth() + 1);
+                        return { ...t, deadline: getLocalString(nextDate) };
+                    }
                     return {
                         ...t,
-                        completed: nowCompleted,
-                        completionDate: nowCompleted ? getTodayDateString() : null
+                        completed: isCompleting,
+                        completionDate: isCompleting ? getTodayDateString() : null
                     };
                 }
                 return t;
             });
-            db.saveTasks(updated);
-            return { tasks: updated };
+
+            if (taskToToggle.recurring && isCompleting) {
+                const completedInstance = { ...taskToToggle, id: Date.now().toString(), completed: true, recurring: null, completionDate: getTodayDateString() };
+                newTasks.push(completedInstance);
+            }
+
+            setDBItem('aura-tasks', newTasks);
+            return { tasks: newTasks };
         });
     },
 
     togglePin: (id) => {
         set((state) => {
             const updated = state.tasks.map(t => t.id === id ? { ...t, isPinned: !t.isPinned } : t);
-            db.saveTasks(updated);
+            setDBItem('aura-tasks', updated);
             return { tasks: updated };
         });
     },
@@ -116,7 +187,7 @@ export const useTaskStore = create((set, get) => ({
         set((state) => {
             deletedTask = state.tasks.find(t => t.id === id);
             const updated = state.tasks.filter(t => t.id !== id);
-            db.saveTasks(updated);
+            setDBItem('aura-tasks', updated);
             return { tasks: updated };
         });
         return deletedTask;
@@ -125,7 +196,7 @@ export const useTaskStore = create((set, get) => ({
     archiveTask: (id) => {
         set((state) => {
             const updated = state.tasks.map(t => t.id === id ? { ...t, isArchived: true } : t);
-            db.saveTasks(updated);
+            setDBItem('aura-tasks', updated);
             return { tasks: updated };
         });
     },
@@ -133,15 +204,74 @@ export const useTaskStore = create((set, get) => ({
     restoreTask: (id) => {
         set((state) => {
             const updated = state.tasks.map(t => t.id === id ? { ...t, isArchived: false } : t);
-            db.saveTasks(updated);
+            setDBItem('aura-tasks', updated);
             return { tasks: updated };
         });
     },
 
-    saveTaskDetail: (id, updates) => {
+    saveTaskDetail: (id, textOrUpdates, notes, tags, estimatedMinutes) => {
         set((state) => {
+            const updates = typeof textOrUpdates === 'object' && textOrUpdates !== null
+                ? textOrUpdates
+                : { text: textOrUpdates, notes, tags, estimatedMinutes };
             const updated = state.tasks.map(t => t.id === id ? { ...t, ...updates } : t);
-            db.saveTasks(updated);
+            setDBItem('aura-tasks', updated);
+            return { tasks: updated };
+        });
+    },
+
+    setTaskDependency: (taskId, dependencyId) => {
+        set((state) => {
+            const updated = state.tasks.map(t => t.id === taskId ? { ...t, dependsOn: dependencyId } : t);
+            setDBItem('aura-tasks', updated);
+            return { tasks: updated };
+        });
+    },
+
+    addAttachmentToTask: async (taskId, fileOrMetadata, isNative = false) => {
+        let attachmentObj;
+        if (isNative) {
+            attachmentObj = fileOrMetadata;
+        } else {
+            const fileId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+            await setFile(fileId, fileOrMetadata);
+            attachmentObj = {
+                id: fileId,
+                name: fileOrMetadata.name,
+                size: fileOrMetadata.size,
+                type: fileOrMetadata.type
+            };
+        }
+
+        set((state) => {
+            const updated = state.tasks.map(t => {
+                if (t.id === taskId) {
+                    const existing = t.attachments || [];
+                    return { ...t, attachments: [...existing, attachmentObj] };
+                }
+                return t;
+            });
+            setDBItem('aura-tasks', updated);
+            return { tasks: updated };
+        });
+    },
+
+    deleteAttachmentFromTask: async (taskId, attachment) => {
+        if (attachment.id && !attachment.path) {
+            try {
+                await deleteFile(attachment.id);
+            } catch (e) {}
+        }
+
+        set((state) => {
+            const updated = state.tasks.map(t => {
+                if (t.id === taskId) {
+                    const existing = t.attachments || [];
+                    return { ...t, attachments: existing.filter(a => a.id !== attachment.id) };
+                }
+                return t;
+            });
+            setDBItem('aura-tasks', updated);
             return { tasks: updated };
         });
     },
@@ -159,7 +289,7 @@ export const useTaskStore = create((set, get) => ({
                 }
                 return t;
             });
-            db.saveTasks(updated);
+            setDBItem('aura-tasks', updated);
             return { tasks: updated };
         });
     },
@@ -180,7 +310,7 @@ export const useTaskStore = create((set, get) => ({
             });
 
             const updated = [...updatedSectionTasks, ...otherTasks];
-            db.saveTasks(updated);
+            setDBItem('aura-tasks', updated);
             return { tasks: updated };
         });
     },
@@ -199,7 +329,7 @@ export const useTaskStore = create((set, get) => ({
 
             const newTemplate = { id: crypto.randomUUID(), name: templateName, tasks: templateTasks };
             const updated = [...state.templates, newTemplate];
-            db.saveTemplates(updated);
+            setDBItem('aura-templates', updated);
             return { templates: updated };
         });
     }

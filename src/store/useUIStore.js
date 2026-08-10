@@ -8,6 +8,8 @@ export const useUIStore = create((set) => ({
     assistantMessage: null,
     focusTaskId: null,
     winModalTaskId: null,
+    templateSuggestion: null,
+    importInputRef: { current: null },
     
     // Modal Visibility States
     isSettingsOpen: false,
@@ -18,8 +20,10 @@ export const useUIStore = create((set) => ({
     isArchiveOpen: false,
     isShareSummaryOpen: false,
     isCommandPaletteOpen: false,
+    isMorningRitualOpen: false,
+    isQuickCaptureOpen: false,
     detailModal: { isOpen: false, taskId: null },
-    shutdownRitual: false,
+    shutdownRitual: { active: false, step: 0 },
 
     // Actions
     setCurrentView: (view) => set({ currentView: view }),
@@ -38,6 +42,8 @@ export const useUIStore = create((set) => ({
     setAssistantMessage: (msg) => set({ assistantMessage: msg }),
     setFocusTaskId: (id) => set({ focusTaskId: id }),
     setWinModalTaskId: (id) => set({ winModalTaskId: id }),
+    setTemplateSuggestion: (suggestion) => set({ templateSuggestion: suggestion }),
+    setImportInputRef: (ref) => set({ importInputRef: ref }),
 
     setIsSettingsOpen: (open) => set({ isSettingsOpen: open }),
     setIsPlanting: (planting) => set({ isPlanting: planting }),
@@ -47,6 +53,8 @@ export const useUIStore = create((set) => ({
     setIsArchiveOpen: (open) => set({ isArchiveOpen: open }),
     setIsShareSummaryOpen: (open) => set({ isShareSummaryOpen: open }),
     setIsCommandPaletteOpen: (open) => set({ isCommandPaletteOpen: open }),
+    setIsMorningRitualOpen: (open) => set({ isMorningRitualOpen: open }),
+    setIsQuickCaptureOpen: (open) => set({ isQuickCaptureOpen: open }),
     setDetailModal: (modal) => set({ detailModal: modal }),
     setShutdownRitual: (active) => set({ shutdownRitual: active })
 }));

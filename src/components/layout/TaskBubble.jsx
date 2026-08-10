@@ -62,7 +62,8 @@ export const TaskBubble = React.memo(({
                     </div>
                     <div className="flex items-center gap-4">
                         {task.deadline && (<div className={`mt-1.5 flex items-center gap-1.5 text-xs font-medium ${isOverdue(task.deadline) && !task.completed ? 'text-rose-400' : 'text-[var(--color-text-primary)]/50'}`}><CalendarIcon className="w-3.5 h-3.5" /><span>{formatDate(task.deadline)}{task.recurring && ` (${task.recurring.type})`}</span></div>)}
-                        {task.focusSessions > 0 && <div className="mt-1.5 flex items-center gap-1.5 text-xs text-[var(--color-text-primary)]/50"><ClockIcon className="w-3.5 h-3.5" /><span>{task.focusSessions}</span></div>}
+                        {task.estimatedMinutes && <div className="mt-1.5 flex items-center gap-1 text-xs text-[var(--color-text-primary)]/50" title="Estimated time"><ClockIcon className="w-3.5 h-3.5" /><span>{task.estimatedMinutes >= 60 ? `${Math.floor(task.estimatedMinutes/60)}h${task.estimatedMinutes%60>0?` ${task.estimatedMinutes%60}m`:''}` : `${task.estimatedMinutes}m`}</span></div>}
+                        {task.focusSessions > 0 && <div className="mt-1.5 flex items-center gap-1.5 text-xs text-[var(--color-text-primary)]/50"><span>🎯</span><span>{task.focusSessions}</span></div>}
                         {task.attachments && task.attachments.length > 0 && <div className="mt-1.5 flex items-center gap-1.5 text-xs text-[var(--color-text-primary)]/50"><FileTextIcon className="w-3.5 h-3.5" /><span>{task.attachments.length}</span></div>}
                     </div>
                     {task.dependsOn && <div className="mt-1 flex items-center gap-1 text-xs text-amber-400/80"><LinkIcon className="w-3 h-3"/><span>Depends on another task</span></div>}

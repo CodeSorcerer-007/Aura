@@ -7,45 +7,19 @@ import {
     motivationalQuotes, parseIntelligentDeadline, achievementsList 
 } from '../utils/helpers';
 
-export function useAppState() {
-    const [tasks, setTasks, tasksLoaded] = usePreferences('aura-tasks', []);
-    const [templates, setTemplates, templatesLoaded] = usePreferences('aura-templates', []);
-    const [stats, setStats, statsLoaded] = usePreferences('aura-stats', { goldenSeeds: 0, streak: 0, lastActiveDate: null, focusedTasksCompleted: 0 });
-    const [unlockedAchievements, setUnlockedAchievements, achievementsLoaded] = usePreferences('aura-achievements', []);
-    const [theme, setTheme, themeLoaded] = usePreferences('aura-theme', 'dark');
-    const [grove, setGrove, groveLoaded] = usePreferences('aura-grove', []);
-    const [customCategories, setCustomCategories, categoriesLoaded] = usePreferences('aura-custom-categories', {});
-    const [hasLaunched, setHasLaunched, launchedLoaded] = usePreferences('aura-has-launched', false);
-    const [journalEntries, setJournalEntries, journalLoaded] = usePreferences('aura-journal-entries', []);
-    const [customThemes, setCustomThemes, customThemesLoaded] = usePreferences('aura-custom-themes', []);
-    const [shutdownTime, setShutdownTime, shutdownTimeLoaded] = usePreferences('aura-shutdown-time', '18:00');
-    const [soundEffectsEnabled, setSoundEffectsEnabled, soundEffectsLoaded] = usePreferences('aura-sound-effects', true);
-    const [autoArchiveEnabled, setAutoArchiveEnabled, autoArchiveLoaded] = usePreferences('aura-auto-archive', true);
-    const [notificationsEnabled, setNotificationsEnabled, notificationsLoaded] = usePreferences('aura-notifications-enabled', false);
+import { useTaskStore } from '../store/useTaskStore';
+import { useSettingsStore } from '../store/useSettingsStore';
+import { useUIStore } from '../store/useUIStore';
 
-    const [isLoading, setIsLoading] = useState(true);
-    const [currentView, setCurrentView] = useState('flow');
-    const [focusTaskId, setFocusTaskId] = useState(null);
-    const [winModalTaskId, setWinModalTaskId] = useState(null);
-    const [assistantMessage, setAssistantMessage] = useState(null);
-    const [templateSuggestion, setTemplateSuggestion] = useState(null);
-    const [activeFilter, setActiveFilter] = useState({ type: 'all', value: null });
-    const [achievementToast, setAchievementToast] = useState(null);
-    const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-    const [isPlanting, setIsPlanting] = useState(false);
+export function useAppState() {
+    const { tasks, setTasks, templates, setTemplates, journalEntries, setJournalEntries, customCategories, setCustomCategories, isLoading: taskLoading, loadInitialData, toggleTask: zToggleTask, togglePin, deleteTask, archiveTask, restoreTask, saveTaskDetail, setTaskDependency, addAttachmentToTask, deleteAttachmentFromTask, saveTemplate, reorderTask, updateTaskOrderAndSection, toggleSubtask, logDistraction } = useTaskStore();
     
-    // Modals
-    const [isSearchOpen, setIsSearchOpen] = useState(false);
-    const [detailModal, setDetailModal] = useState({ isOpen: false, taskId: null });
-    const [isMindfulMinuteOpen, setIsMindfulMinuteOpen] = useState(false);
-    const [isThemeCreatorOpen, setIsThemeCreatorOpen] = useState(false);
-    const [shutdownRitual, setShutdownRitual] = useState({ active: false, step: 0 });
-    const [toastMessage, setToastMessage] = useState(null);
-    const [isArchiveOpen, setIsArchiveOpen] = useState(false);
-    const [isShareSummaryOpen, setIsShareSummaryOpen] = useState(false);
-    const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
+    const { stats, setStats, unlockedAchievements, setUnlockedAchievements, theme, setTheme, grove, setGrove, customThemes, setCustomThemes, shutdownTime, setShutdownTime, soundEffectsEnabled, setSoundEffectsEnabled, autoArchiveEnabled, setAutoArchiveEnabled, notificationsEnabled, setNotificationsEnabled, hasLaunched, setHasLaunched, playSoundEffect, loadSettings } = useSettingsStore();
     
-    const importInputRef = useRef(null);
+    const { currentView, setCurrentView, activeFilter, setActiveFilter, toastMessage, setToastMessage, achievementToast, setAchievementToast, assistantMessage, setAssistantMessage, focusTaskId, setFocusTaskId, winModalTaskId, setWinModalTaskId, templateSuggestion, setTemplateSuggestion, importInputRef, isSettingsOpen, setIsSettingsOpen, isPlanting, setIsPlanting, isSearchOpen, setIsSearchOpen, isMindfulMinuteOpen, setIsMindfulMinuteOpen, isThemeCreatorOpen, setIsThemeCreatorOpen, isArchiveOpen, setIsArchiveOpen, isShareSummaryOpen, setIsShareSummaryOpen, isCommandPaletteOpen, setIsCommandPaletteOpen, isMorningRitualOpen, setIsMorningRitualOpen, isQuickCaptureOpen, setIsQuickCaptureOpen, detailModal, setDetailModal, shutdownRitual, setShutdownRitual } = useUIStore();
+    
+    const isLoading = taskLoading;
+    const [initialLoadDone, setInitialLoadDone] = useState(false);
 
     const allCategories = useMemo(() => ({...defaultCategories, ...customCategories}), [customCategories]);
     
@@ -77,37 +51,24 @@ export function useAppState() {
         }
     }, [notificationsEnabled]);
 
-    const playSoundEffect = useCallback((effect) => {
-        if (!soundEffectsEnabled) return;
-        
-        const now = Tone.now();
-        Tone.start().then(() => {
-            switch (effect) {
-                case 'add':
-                    new Tone.Synth().toDestination().triggerAttackRelease("C5", "8n", now);
-                    break;
-                case 'complete':
-                    new Tone.Synth().toDestination().triggerAttackRelease("E6", "8n", now);
-                    break;
-                case 'achievement':
-                    new Tone.PluckSynth().toDestination().triggerAttackRelease("C7", "8n", now);
-                    break;
-                default:
-                    break;
-            }
-        });
-    }, [soundEffectsEnabled]);
+
     
     useEffect(() => {
-        const allDataLoaded = tasksLoaded && templatesLoaded && statsLoaded && achievementsLoaded && themeLoaded && groveLoaded && categoriesLoaded && launchedLoaded && journalLoaded && customThemesLoaded && shutdownTimeLoaded && soundEffectsLoaded && autoArchiveLoaded && notificationsLoaded;
-        if (allDataLoaded) {
+        if (!initialLoadDone) {
+            Promise.all([loadInitialData(), loadSettings()]).then(() => {
+                setInitialLoadDone(true);
+            });
+        }
+    }, [initialLoadDone, loadInitialData, loadSettings]);
+
+    useEffect(() => {
+        if (initialLoadDone && !isLoading) {
              if (!hasLaunched) {
                 setTasks(demoTasks);
                 setHasLaunched(true);
             }
-            setTimeout(() => setIsLoading(false), 1200);
         }
-    }, [tasksLoaded, templatesLoaded, statsLoaded, achievementsLoaded, themeLoaded, groveLoaded, categoriesLoaded, launchedLoaded, journalLoaded, customThemesLoaded, shutdownTimeLoaded, soundEffectsLoaded, autoArchiveLoaded, notificationsLoaded, hasLaunched, setTasks, setHasLaunched]);
+    }, [initialLoadDone, isLoading, hasLaunched, setTasks, setHasLaunched]);
 
     useEffect(() => {
         if (toastMessage) {
@@ -200,191 +161,50 @@ export function useAppState() {
         }
     }, [tasks, stats, isLoading, grove, shutdownTime, checkAchievements, updateStreakAndArchive, runAssistant]);
 
+    // ─── Morning Ritual trigger ───────────────────────────────────────────────
+    useEffect(() => {
+        if (!isLoading) {
+            const lastRitualKey = 'aura-last-morning-ritual';
+            const today = getTodayDateString();
+            const last = localStorage.getItem(lastRitualKey);
+            if (last !== today) {
+                setIsMorningRitualOpen(true);
+                localStorage.setItem(lastRitualKey, today);
+            }
+        }
+    }, [isLoading]);
+
+    const handleSetMITs = useCallback((taskIds) => {
+        if (taskIds.length > 0) {
+            setTasks(prev => prev.map(t => ({ ...t, isPinned: taskIds.includes(t.id) || t.isPinned })));
+        }
+        setIsMorningRitualOpen(false);
+    }, [setTasks, setIsMorningRitualOpen]);
+
     const addTask = useCallback((text, applyTemplate = null) => {
-        playSoundEffect('add');
-        if (applyTemplate) { 
-            const template = templates.find(t => t.name === applyTemplate); 
-            if (!template) return; 
-            const newTasks = template.tasks.map(t => ({...t, id: crypto.randomUUID(), subtasks: [], win: null, completionDate: null, notes: '', attachments: [], tags: [], isPinned: false, focusSessions: 0, isArchived: false })); 
-            setTasks(prev => [...prev, ...newTasks]); 
-            setTemplateSuggestion(null); 
-            return; 
-        }
-        if (templateSuggestion) { setTemplateSuggestion(null); }
-        
-        const matchingTemplate = templates.find(t => text.toLowerCase().includes(t.name.toLowerCase()));
-        if (matchingTemplate) { setTemplateSuggestion({ templateName: matchingTemplate.name, taskText: text }); return; }
-
-        let { deadline, cleanedText, recurring } = parseIntelligentDeadline(text);
-
-        const tagRegex = /@(\w+)/g;
-        const tags = [...cleanedText.matchAll(tagRegex)].map(match => match[1]);
-        cleanedText = cleanedText.replace(tagRegex, '').trim();
-
-        let priority = 2;
-        if (cleanedText.includes('!')) {
-            priority = 3;
-            cleanedText = cleanedText.replace(/(^|\s)!+(?=\s|$)/g, ' ').replace(/!+$/, '').trim();
-        }
-        if (cleanedText.toLowerCase().includes('urgent')) { priority = 3; cleanedText = cleanedText.replace(/urgent/ig, '').trim(); }
-        if (cleanedText.toLowerCase().includes('low priority')) { priority = 1; cleanedText = cleanedText.replace(/low priority/ig, '').trim(); }
-        let category = 'General'; 
-        const categoryMatch = cleanedText.match(/#(\w+)/); 
-        if (categoryMatch) { 
-            category = categoryMatch[1].charAt(0).toUpperCase() + categoryMatch[1].slice(1); 
-            cleanedText = cleanedText.replace(/#\w+/, '').trim(); 
-        }
-        let time = 'afternoon'; 
-        if (cleanedText.toLowerCase().includes('morning')) { time = 'morning'; cleanedText = cleanedText.replace(/morning/ig, '').trim(); } 
-        if (cleanedText.toLowerCase().includes('evening') || cleanedText.toLowerCase().includes('night')) { time = 'evening'; cleanedText = cleanedText.replace(/evening|night/ig, '').trim(); }
-        
-        const newTask = { id: crypto.randomUUID(), text: cleanedText.replace(/  +/g, ' ').trim(), completed: false, priority, category, timeOfDay: time, deadline, subtasks: [], win: null, completionDate: null, recurring, notes: '', attachments: [], tags, isPinned: false, focusSessions: 0, isArchived: false };
-        setTasks(prevTasks => [...prevTasks, newTask]);
-    }, [playSoundEffect, templates, templateSuggestion, setTasks]);
+        useTaskStore.getState().addTask(text, applyTemplate);
+        if (templateSuggestion) setTemplateSuggestion(null);
+    }, [templateSuggestion, setTemplateSuggestion]);
     
-    const toggleTask = useCallback(async (id) => {
-        const taskToToggle = tasks.find(t => t.id === id);
-        if (!taskToToggle) return;
-
-        const isCompleting = !taskToToggle.completed;
-        if (isCompleting) {
-            playSoundEffect('complete');
-            setGrove(prevGrove => {
-                const latestTreeIndex = prevGrove.findLastIndex(tree => tree.growthPoints < tree.maxGrowth);
-                if (latestTreeIndex > -1) {
-                    const newGrove = [...prevGrove];
-                    newGrove[latestTreeIndex] = { ...newGrove[latestTreeIndex], growthPoints: newGrove[latestTreeIndex].growthPoints + 1 };
-                    return newGrove;
-                }
-                return prevGrove;
-            });
-            if (taskToToggle.priority >= 2 && !taskToToggle.recurring) {
-                setWinModalTaskId(id);
-            }
-        }
-
-        setTasks(prevTasks => {
-            let newTasks = prevTasks.map(t => {
-                if (t.id === id) {
-                    if (t.recurring) {
-                        const nextDate = new Date(t.deadline || getTodayDateString());
-                        if (t.recurring.type === 'daily') nextDate.setDate(nextDate.getDate() + 1);
-                        if (t.recurring.type === 'weekly') nextDate.setDate(nextDate.getDate() + 7);
-                        if (t.recurring.type === 'monthly') nextDate.setMonth(nextDate.getMonth() + 1);
-                        return { ...t, deadline: getLocalString(nextDate) };
-                    }
-                    return { ...t, completed: !t.completed, completionDate: t.completed ? null : getTodayDateString() };
-                }
-                return t;
-            });
-
-            if (taskToToggle.recurring && isCompleting) {
-                const completedInstance = { ...taskToToggle, id: Date.now(), completed: true, recurring: null, completionDate: getTodayDateString() };
-                newTasks.push(completedInstance);
-            }
-
-            return newTasks;
-        });
-    }, [playSoundEffect, setTasks, setGrove, tasks]);
-
-    const togglePin = useCallback((id) => {
-        setTasks(prevTasks => prevTasks.map(t => t.id === id ? { ...t, isPinned: !t.isPinned } : t));
-    }, [setTasks]);
-    
-    const handleSkipWin = useCallback((id) => {
-        setWinModalTaskId(null);
+    const toggleTask = useCallback((id) => {
+        useTaskStore.getState().toggleTask(id);
     }, []);
 
-    const saveWin = useCallback((id, winText) => {
-        setTasks(prevTasks => prevTasks.map(t => t.id === id ? { ...t, win: winText } : t));
+    const handleSkipWin = useCallback((id) => {
         setWinModalTaskId(null);
-    }, [setTasks]);
-    
-    const deleteTask = useCallback(async (id) => {
-        const taskToDelete = tasks.find(t => t.id === id);
-        if (!taskToDelete) return;
+    }, [setWinModalTaskId]);
 
-        setTasks(prevTasks => prevTasks.filter(task => task.id !== id));
-
-        setToastMessage({
-            type: 'info',
-            text: `Deleted "${taskToDelete.text.length > 25 ? taskToDelete.text.substring(0, 25) + '...' : taskToDelete.text}"`,
-            actionLabel: 'Undo',
-            onAction: () => {
-                setTasks(prevTasks => [...prevTasks, taskToDelete]);
-                setToastMessage({ type: 'success', text: 'Task restored!' });
-            }
-        });
-
-        // Delay file cleanup to allow undo
-        setTimeout(async () => {
-            if (taskToDelete.attachments && taskToDelete.attachments.length > 0) {
-                for (const att of taskToDelete.attachments) {
-                    try { await deleteFile(att.id); } catch(e) {}
-                }
-            }
-        }, 5500);
-    }, [tasks, setTasks]);
-
-    const archiveTask = useCallback((id) => {
-        setTasks(prevTasks => prevTasks.map(t => t.id === id ? { ...t, isArchived: true } : t));
-    }, [setTasks]);
-
-    const restoreTask = useCallback((id) => {
-        setTasks(prevTasks => prevTasks.map(t => t.id === id ? { ...t, isArchived: false } : t));
-    }, [setTasks]);
-
-    const saveTaskDetail = useCallback((id, newText, newNotes, newTags) => {
-        setTasks(prevTasks => prevTasks.map(t => t.id === id ? { ...t, text: newText, notes: newNotes, tags: newTags } : t));
-    }, [setTasks]);
-
-    const setTaskDependency = useCallback((taskId, dependencyId) => {
-        setTasks(prevTasks => prevTasks.map(t => t.id === taskId ? { ...t, dependsOn: dependencyId } : t));
-    }, [setTasks]);
-
-    const addAttachmentToTask = useCallback(async (taskId, file) => {
-        const fileId = crypto.randomUUID();
-        const attachmentMeta = { id: fileId, name: file.name, type: file.type };
-        
-        await setFile(fileId, file);
-
-        setTasks(currentTasks => 
-            currentTasks.map(task => {
-                if (task.id === taskId) {
-                    const attachments = task.attachments || [];
-                    return { ...task, attachments: [...attachments, attachmentMeta] };
-                }
-                return task;
-            })
-        );
-    }, [setTasks]);
-
-    const deleteAttachmentFromTask = useCallback(async (taskId, attachment) => {
-        await deleteFile(attachment.id);
-        setTasks(currentTasks =>
-            currentTasks.map(task => {
-                if (task.id === taskId) {
-                    return {
-                        ...task,
-                        attachments: task.attachments.filter(att => att.id !== attachment.id),
-                    };
-                }
-                return task;
-            })
-        );
-    }, [setTasks]);
-
-    const saveTemplate = useCallback((category, tasksToSave) => {
-        const templateTasks = tasksToSave.map(t => ({ text: t.text, category: t.category, priority: t.priority, timeOfDay: t.timeOfDay }));
-        setTemplates(prev => [...prev, { name: category, tasks: templateTasks }]);
-    }, [setTemplates]);
+    const saveWin = useCallback((id, winText) => {
+        useTaskStore.getState().setTasks(prevTasks => prevTasks.map(t => t.id === id ? { ...t, win: winText } : t));
+        setWinModalTaskId(null);
+    }, [setWinModalTaskId]);
     
     const handlePlantSeed = useCallback(() => {
         if (stats.goldenSeeds > 0) {
             setStats(prev => ({ ...prev, goldenSeeds: prev.goldenSeeds - 1 }));
             setIsPlanting(true);
         }
-    }, [stats.goldenSeeds, setStats]);
+    }, [stats.goldenSeeds, setStats, setIsPlanting]);
     
     const finishPlanting = useCallback(() => {
         const unlockedTrees = ['oak'];
@@ -394,51 +214,7 @@ export function useAppState() {
         
         setGrove(prev => [...prev, { id: Date.now(), growthPoints: 0, maxGrowth: 10, type: randomType }]);
         setIsPlanting(false);
-    }, [unlockedAchievements, setGrove]);
-
-    const reorderTask = useCallback((taskId, direction) => {
-        setTasks(prevTasks => {
-            const tasksToSort = prevTasks.filter(t => !t.completed);
-            const completedTasks = prevTasks.filter(t => t.completed);
-            
-            const index = tasksToSort.findIndex(t => t.id === taskId);
-            if (index === -1) return prevTasks;
-            
-            const newIndex = direction === 'up' ? index - 1 : index + 1;
-            if (newIndex < 0 || newIndex >= tasksToSort.length) return prevTasks;
-            
-            const [movedTask] = tasksToSort.splice(index, 1);
-            tasksToSort.splice(newIndex, 0, movedTask);
-            
-            return [...tasksToSort, ...completedTasks];
-        });
-    }, [setTasks]);
-
-    const updateTaskOrderAndSection = useCallback((reorderedSectionTasks, timeSection) => {
-        setTasks(prevTasks => {
-            const currentIds = new Set(reorderedSectionTasks.map(t => t.id));
-            const otherTasks = prevTasks.filter(t => !currentIds.has(t.id));
-            
-            const updatedSectionTasks = reorderedSectionTasks.map(t => {
-                if (timeSection && t.timeOfDay !== timeSection) {
-                    return { ...t, timeOfDay: timeSection };
-                }
-                return t;
-            });
-
-            return [...updatedSectionTasks, ...otherTasks];
-        });
-    }, [setTasks]);
-
-    const toggleSubtask = useCallback((taskId, subtaskText) => {
-        setTasks(prevTasks => prevTasks.map(task => {
-            if (task.id === taskId) {
-                const newSubtasks = task.subtasks.map(st => st.text === subtaskText ? { ...st, completed: !st.completed } : st);
-                return { ...task, subtasks: newSubtasks };
-            }
-            return task;
-        }));
-    }, [setTasks]);
+    }, [unlockedAchievements, setGrove, setIsPlanting]);
 
     const focusTask = useMemo(() => tasks.find(t => t.id === focusTaskId), [tasks, focusTaskId]);
     const tasksCompletedToday = useMemo(() => tasks.filter(t => t.completionDate === getTodayDateString()).length, [tasks]);
@@ -646,6 +422,8 @@ export function useAppState() {
         requestNotificationPermission, handleSetNotifications, showNotification, playSoundEffect, addTask,
         toggleTask, togglePin, handleSkipWin, saveWin, deleteTask, archiveTask, restoreTask, saveTaskDetail,
         setTaskDependency, addAttachmentToTask, deleteAttachmentFromTask, saveTemplate, handlePlantSeed, finishPlanting,
-        reorderTask, updateTaskOrderAndSection, toggleSubtask, handleFocusComplete, handleExport, handleImport
+        reorderTask, updateTaskOrderAndSection, toggleSubtask, handleFocusComplete, handleExport, handleImport,
+        isMorningRitualOpen, setIsMorningRitualOpen, isQuickCaptureOpen, setIsQuickCaptureOpen,
+        handleSetMITs, logDistraction
     };
 }
