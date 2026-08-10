@@ -17,7 +17,30 @@ export default defineConfig({
         theme_color: '#000000',
         background_color: '#000000',
         display: 'standalone',
+        display_override: ['window-controls-overlay', 'standalone'],
         orientation: 'portrait-primary',
+        protocol_handlers: [
+          {
+            protocol: 'web+aura',
+            url: '/?task=%s'
+          }
+        ],
+        shortcuts: [
+          {
+            name: 'New Task',
+            short_name: 'Add',
+            description: 'Quickly capture a task in Aura',
+            url: '/?action=new_task',
+            icons: [{ src: 'pwa-192x192.png', sizes: '192x192' }]
+          },
+          {
+            name: 'Focus Timer',
+            short_name: 'Focus',
+            description: 'Start a focus session',
+            url: '/?action=focus',
+            icons: [{ src: 'pwa-192x192.png', sizes: '192x192' }]
+          }
+        ],
         icons: [
           {
             src: 'pwa-192x192.png',

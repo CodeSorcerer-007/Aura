@@ -99,6 +99,9 @@ export default function App() {
                     <AnimatePresence>{winModalTaskId && <WinModal task={tasks.find(t => t.id === winModalTaskId)} onSaveWin={saveWin} onClose={() => handleSkipWin(winModalTaskId)} />}</AnimatePresence>
                     <AnimatePresence>{achievementToast && <AchievementToast achievement={achievementToast} onClose={() => setAchievementToast(null)} />}</AnimatePresence>
                     <AnimatePresence>{toastMessage && <GenericToast message={toastMessage} onClose={() => setToastMessage(null)} />}</AnimatePresence>
+                    <div className="sr-only" aria-live="polite" aria-atomic="true">
+                        {toastMessage ? toastMessage.text : ''}
+                    </div>
                     <AnimatePresence><SearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} tasks={tasks.filter(t=>!t.isArchived)} toggleTask={toggleTask} deleteTask={deleteTask} onFocus={setFocusTaskId} onReorder={reorderTask} onToggleSubtask={toggleSubtask} allCategories={allCategories} onOpenDetail={(id) => setDetailModal({isOpen: true, taskId: id})} onTogglePin={togglePin} onArchive={archiveTask} /></AnimatePresence>
                     <AnimatePresence><TaskDetailModal isOpen={detailModal.isOpen} onClose={() => setDetailModal({isOpen: false, taskId: null})} task={detailTask} onSave={saveTaskDetail} onSetDependency={setTaskDependency} allTasks={tasks.filter(t=>!t.isArchived)} onAddAttachment={addAttachmentToTask} onDeleteAttachment={deleteAttachmentFromTask} /></AnimatePresence>
                     <AnimatePresence><MindfulMinuteModal isOpen={isMindfulMinuteOpen} onClose={() => setIsMindfulMinuteOpen(false)} /></AnimatePresence>
