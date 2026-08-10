@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
+import * as Tone from 'tone';
 
 export const FocusView = ({ task, onClose, onComplete }) => {
     const [duration, setDuration] = useState(25);
@@ -17,7 +18,6 @@ export const FocusView = ({ task, onClose, onComplete }) => {
 
     useEffect(() => {
         let isMounted = true;
-        if (!window.Tone) return;
 
         if (soundPlayer.current) {
             try {
@@ -29,7 +29,7 @@ export const FocusView = ({ task, onClose, onComplete }) => {
 
         if (soundType !== 'off') {
             try {
-                const player = new window.Tone.Noise(soundType).toDestination();
+                const player = new Tone.Noise(soundType).toDestination();
                 player.volume.value = -20;
                 if (isMounted) soundPlayer.current = player;
             } catch (e) {}
@@ -49,8 +49,8 @@ export const FocusView = ({ task, onClose, onComplete }) => {
 
     useEffect(() => {
         let isMounted = true;
-        if (isActive && soundPlayer.current && window.Tone) {
-            window.Tone.start().then(() => {
+        if (isActive && soundPlayer.current) {
+            Tone.start().then(() => {
                 if (isMounted && soundPlayer.current && isActive) {
                     try { soundPlayer.current.start(); } catch (e) {}
                 }
@@ -62,8 +62,8 @@ export const FocusView = ({ task, onClose, onComplete }) => {
     }, [isActive, soundType]);
 
     useEffect(() => {
-        if (!isActive) { setTimeLeft(duration * 60); }
-    }, [duration, isActive]);
+        setTimeLeft(duration * 60);
+    }, [duration]);
 
     useEffect(() => { 
         let interval = null; 

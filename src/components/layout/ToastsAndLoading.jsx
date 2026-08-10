@@ -46,17 +46,29 @@ export const AchievementToast = ({ achievement, onClose }) => (
     </motion.div>
 );
 
-export const GenericToast = ({ message, onClose }) => (
-    <motion.div 
-        layout
-        initial={{ opacity: 0, y: 50, scale: 0.3 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.5, transition: { duration: 0.2 } }}
-        className="fixed bottom-[calc(6rem+env(safe-area-inset-bottom))] left-1/2 -translate-x-1/2 z-50 w-full max-w-sm p-4"
-    >
-        <div className={`p-4 rounded-xl shadow-2xl text-white flex items-center gap-4 ${message.type === 'success' ? 'bg-emerald-500' : 'bg-rose-500'}`}>
-            <p className="font-semibold text-sm">{message.text}</p>
-            <button onClick={onClose} className="ml-auto text-white/70 hover:text-white flex-shrink-0"><XIcon className="w-5 h-5"/></button>
-        </div>
-    </motion.div>
-);
+export const GenericToast = ({ message, onClose }) => {
+    const bgColor = message.type === 'success' ? 'bg-emerald-600' : message.type === 'info' ? 'bg-indigo-600' : 'bg-rose-600';
+    
+    return (
+        <motion.div 
+            layout
+            initial={{ opacity: 0, y: 50, scale: 0.3 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.5, transition: { duration: 0.2 } }}
+            className="fixed bottom-[calc(6rem+env(safe-area-inset-bottom))] left-1/2 -translate-x-1/2 z-50 w-full max-w-sm px-4"
+        >
+            <div className={`p-4 rounded-xl shadow-2xl text-white flex items-center justify-between gap-3 ${bgColor}`}>
+                <p className="font-semibold text-sm truncate flex-grow">{message.text}</p>
+                {message.actionLabel && message.onAction && (
+                    <button 
+                        onClick={() => { message.onAction(); onClose(); }} 
+                        className="px-3 py-1 bg-white/20 hover:bg-white/30 rounded-lg text-xs font-bold transition-colors flex-shrink-0"
+                    >
+                        {message.actionLabel}
+                    </button>
+                )}
+                <button onClick={onClose} className="text-white/70 hover:text-white flex-shrink-0"><XIcon className="w-5 h-5"/></button>
+            </div>
+        </motion.div>
+    );
+};

@@ -53,7 +53,10 @@ export const parseIntelligentDeadline = (text) => {
     const recurringPatterns = [
         { regex: /every day/i, type: 'daily' },
         { regex: /every week/i, type: 'weekly' },
-        { regex: /every month/i, type: 'monthly' }
+        { regex: /every month/i, type: 'monthly' },
+        { regex: /daily/i, type: 'daily' },
+        { regex: /weekly/i, type: 'weekly' },
+        { regex: /monthly/i, type: 'monthly' },
     ];
 
     for (const pattern of recurringPatterns) {
@@ -64,11 +67,147 @@ export const parseIntelligentDeadline = (text) => {
         }
     }
 
-    const patterns = [ { regex: /in (\d+) (day|week|month)s?/i, handler: (matches) => { const num = parseInt(matches[1], 10); const unit = matches[2].toLowerCase(); const d = new Date(now); if (unit === 'day') d.setDate(now.getDate() + num); if (unit === 'week') d.setDate(now.getDate() + num * 7); if (unit === 'month') d.setMonth(now.getMonth() + num); return d; }}, { regex: /today|tomorrow/i, handler: (matches) => { const d = new Date(now); if (matches[0].toLowerCase() === 'tomorrow') d.setDate(now.getDate() + 1); return d; }}, { regex: /next (monday|tuesday|wednesday|thursday|friday|saturday|sunday|week)/i, handler: (matches) => { const d = new Date(now); if (matches[1].toLowerCase() === 'week') { d.setDate(now.getDate() + 7); return d; } const weekdays = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']; const targetDay = weekdays.indexOf(matches[1].toLowerCase()); const currentDay = now.getDay(); let dayDiff = targetDay - currentDay; if (dayDiff <= 0) dayDiff += 7; d.setDate(now.getDate() + dayDiff); return d; }}, { regex: /(?:by|on) (monday|tuesday|wednesday|thursday|friday|saturday|sunday)/i, handler: (matches) => { const d = new Date(now); const weekdays = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']; const targetDay = weekdays.indexOf(matches[1].toLowerCase()); let dayDiff = targetDay - now.getDay(); if (dayDiff < 0) dayDiff += 7; d.setDate(now.getDate() + dayDiff); return d; }}, { regex: /(?:on)?\s?(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\s(\d{1,2})/i, handler: (matches) => { const months = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec']; const month = months.indexOf(matches[1].toLowerCase().substring(0, 3)); const day = parseInt(matches[2], 10); if (month === -1 || isNaN(day)) return null; const year = now.getFullYear(); const d = new Date(year, month, day); if (d < now) d.setFullYear(year + 1); return d; }} ];
-    for (const pattern of patterns) { const match = cleanedText.match(pattern.regex); if (match) { const dateResult = pattern.handler(match); if (dateResult) { deadline = getLocalString(dateResult); cleanedText = cleanedText.replace(match[0], '').replace(/  +/g, ' ').trim(); break; } } }
+    const weekdays = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+
+    const getNextWeekday = (targetName, allowSameDay = false) => {
+        const d = new Date(now);
+        const targetDay = weekdays.indexOf(targetName.toLowerCase());
+        let dayDiff = targetDay - now.getDay();
+        if (dayDiff < (allowSameDay ? 0 : 1)) dayDiff += 7;
+        d.setDate(now.getDate() + dayDiff);
+        return d;
+    };
+
+    const patterns = [
+        // "in N days/weeks/months"
+        {
+            regex: /in (\d+) (day|week|month|fortnight)s?/i,
+            handler: (matches) => {
+                const num = parseInt(matches[1], 10);
+                const unit = matches[2].toLowerCase();
+                const d = new Date(now);
+                if (unit === 'day') d.setDate(now.getDate() + num);
+                if (unit === 'week') d.setDate(now.getDate() + num * 7);
+                if (unit === 'month') d.setMonth(now.getMonth() + num);
+                if (unit === 'fortnight') d.setDate(now.getDate() + 14 * num);
+                return d;
+            }
+        },
+        // "today" / "tomorrow" / "yesterday"
+        {
+            regex: /\b(today|tomorrow)\b/i,
+            handler: (matches) => {
+                const d = new Date(now);
+                if (matches[1].toLowerCase() === 'tomorrow') d.setDate(now.getDate() + 1);
+                return d;
+            }
+        },
+        // "next monday/week/month/year"
+        {
+            regex: /next (monday|tuesday|wednesday|thursday|friday|saturday|sunday|week|month|year)/i,
+            handler: (matches) => {
+                const d = new Date(now);
+                const unit = matches[1].toLowerCase();
+                if (unit === 'week') { d.setDate(now.getDate() + 7); return d; }
+                if (unit === 'month') { d.setMonth(now.getMonth() + 1); d.setDate(1); return d; }
+                if (unit === 'year') { d.setFullYear(now.getFullYear() + 1); d.setMonth(0); d.setDate(1); return d; }
+                return getNextWeekday(unit);
+            }
+        },
+        // "by/on monday/tuesday..."
+        {
+            regex: /(?:by|on) (monday|tuesday|wednesday|thursday|friday|saturday|sunday)/i,
+            handler: (matches) => getNextWeekday(matches[1], true)
+        },
+        // "end of week" → Sunday
+        {
+            regex: /end of (the )?week/i,
+            handler: () => getNextWeekday('sunday')
+        },
+        // "end of month" / "end of next month"
+        {
+            regex: /end of (next )?month/i,
+            handler: (matches) => {
+                const d = new Date(now);
+                const monthOffset = matches[1] ? 2 : 1;
+                d.setMonth(now.getMonth() + monthOffset, 0); // day 0 = last day of prev month
+                return d;
+            }
+        },
+        // "end of year"
+        {
+            regex: /end of (the )?year/i,
+            handler: () => new Date(now.getFullYear(), 11, 31)
+        },
+        // "next month" (1st of next month, already handled above in "next X" but explicit fallback)
+        {
+            regex: /\bnext month\b/i,
+            handler: () => {
+                const d = new Date(now);
+                d.setMonth(now.getMonth() + 1);
+                d.setDate(1);
+                return d;
+            }
+        },
+        // Q1/Q2/Q3/Q4
+        {
+            regex: /\bQ([1-4])\b/i,
+            handler: (matches) => {
+                const quarter = parseInt(matches[1], 10);
+                const startMonth = (quarter - 1) * 3;
+                const year = startMonth < now.getMonth() ? now.getFullYear() + 1 : now.getFullYear();
+                return new Date(year, startMonth + 3, 0); // last day of the quarter's final month
+            }
+        },
+        // "this weekend" → Saturday
+        {
+            regex: /this weekend/i,
+            handler: () => getNextWeekday('saturday', true)
+        },
+        // "in a week" / "in a month" / "in a day" / "in a fortnight"
+        {
+            regex: /in a (day|week|month|fortnight)/i,
+            handler: (matches) => {
+                const unit = matches[1].toLowerCase();
+                const d = new Date(now);
+                if (unit === 'day') d.setDate(now.getDate() + 1);
+                if (unit === 'week') d.setDate(now.getDate() + 7);
+                if (unit === 'month') d.setMonth(now.getMonth() + 1);
+                if (unit === 'fortnight') d.setDate(now.getDate() + 14);
+                return d;
+            }
+        },
+        // "Jan 15" / "December 25" etc.
+        {
+            regex: /(?:on\s)?(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\s(\d{1,2})/i,
+            handler: (matches, fullMatch) => {
+                const months = ['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
+                const monthStr = fullMatch.replace(/on\s/i, '').substring(0, 3).toLowerCase();
+                const month = months.indexOf(monthStr);
+                const day = parseInt(matches[1], 10);
+                if (month === -1 || isNaN(day)) return null;
+                const year = now.getFullYear();
+                const d = new Date(year, month, day);
+                if (d < now) d.setFullYear(year + 1);
+                return d;
+            }
+        },
+    ];
+
+    for (const pattern of patterns) {
+        const match = cleanedText.match(pattern.regex);
+        if (match) {
+            const dateResult = pattern.handler(match, match[0]);
+            if (dateResult) {
+                deadline = getLocalString(dateResult);
+                cleanedText = cleanedText.replace(match[0], '').replace(/  +/g, ' ').trim();
+                break;
+            }
+        }
+    }
     
     if (recurring && !deadline) {
-      deadline = getTodayDateString();
+        deadline = getTodayDateString();
     }
     
     return { deadline, cleanedText, recurring };

@@ -1,14 +1,21 @@
 import React, { useMemo } from 'react';
-import { motion } from 'framer-motion';
+import { motion, Reorder } from 'framer-motion';
 import { 
-    ChevronUpIcon, ChevronDownIcon, CheckIcon, CalendarIcon, 
-    ClockIcon, FileTextIcon, LinkIcon, PinIcon, ArchiveIcon, 
-    PlayIcon, XIcon 
+    CheckIcon, CalendarIcon, 
+    ClockIcon, FileTextIcon, PinIcon, ArchiveIcon, 
+    PlayIcon, XIcon, LinkIcon
 } from '../icons/Icons';
 import { defaultCategories, isOverdue, formatDate } from '../../utils/helpers';
 
-export const TaskBubble = ({ 
-    task, onToggle, onDelete, onFocus, onReorder, 
+// Simple drag handle icon (Grip dots)
+const GripIcon = ({ className = "w-4 h-4" }) => (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 9h.01M8 15h.01M16 9h.01M16 15h.01" />
+    </svg>
+);
+
+export const TaskBubble = React.memo(({ 
+    task, onToggle, onDelete, onFocus, 
     onToggleSubtask, allCategories, isDependencyMet, 
     onOpenDetail, onTogglePin, onArchive 
 }) => {
@@ -29,19 +36,21 @@ export const TaskBubble = ({
     }, [task.completed, task.priority, color.glowColor]);
 
     return ( 
-        <motion.div 
+        <Reorder.Item 
+            value={task}
+            id={task.id}
             layout 
-            initial={{ opacity: 0, y: 20, scale: 0.95 }} 
+            initial={{ opacity: 0, y: 15, scale: 0.98 }} 
             animate={{ opacity: 1, y: 0, scale: 1 }} 
-            exit={{ opacity: 0, x: -100, transition: { duration: 0.3 } }} 
-            transition={{ type: 'spring', stiffness: 200, damping: 25 }}
+            exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }} 
+            whileDrag={{ scale: 1.02, boxShadow: "0px 10px 25px rgba(0,0,0,0.5)", zIndex: 50 }}
+            transition={{ type: 'spring', stiffness: 250, damping: 25 }}
             style={glowStyle}
             className={`p-4 rounded-2xl border backdrop-blur-sm transition-all duration-300 ${color.bg} ${color.border} ${task.completed ? 'opacity-50 brightness-75' : ''} ${isLocked ? 'opacity-60 brightness-90' : ''} ${task.isPinned ? 'border-amber-400/80' : ''}`}
         >
             <div className="flex items-start gap-2">
-                 <div className="flex flex-col items-center mt-1">
-                    <button onClick={() => onReorder(task.id, 'up')} className="bg-transparent text-[var(--color-text-primary)]/30 hover:text-[var(--color-text-primary)]/70"><ChevronUpIcon className="w-4 h-4" /></button>
-                    <button onClick={() => onReorder(task.id, 'down')} className="bg-transparent text-[var(--color-text-primary)]/30 hover:text-[var(--color-text-primary)]/70"><ChevronDownIcon className="w-4 h-4" /></button>
+                 <div className="flex flex-col items-center mt-1 cursor-grab active:cursor-grabbing text-[var(--color-text-primary)]/30 hover:text-[var(--color-text-primary)]/80 transition-colors py-1 px-0.5 rounded" title="Drag to reorder">
+                    <GripIcon className="w-5 h-5" />
                 </div>
                 <motion.button onClick={() => !isLocked && onToggle(task.id)} className={`w-7 h-7 mt-0.5 rounded-full border-2 flex-shrink-0 flex items-center justify-center transition-colors duration-300 ${task.completed ? 'bg-teal-400 border-teal-400' : 'border-[var(--color-text-primary)]/50'} ${isLocked ? 'cursor-not-allowed' : 'hover:border-[var(--color-text-primary)]'}`} whileTap={isLocked ? {} : { scale: 0.9 }}>{task.completed && <motion.div initial={{scale:0}} animate={{scale:1}}><CheckIcon className="w-5 h-5 text-black" /></motion.div>}</motion.button>
                 <div className="flex-grow cursor-pointer" onClick={() => onOpenDetail(task.id)}>
@@ -59,23 +68,67 @@ export const TaskBubble = ({
                     {task.dependsOn && <div className="mt-1 flex items-center gap-1 text-xs text-amber-400/80"><LinkIcon className="w-3 h-3"/><span>Depends on another task</span></div>}
                 </div>
                 <div className="flex flex-col items-end gap-2 flex-shrink-0">
-                    <div className={`text-xs px-2 py-1 rounded-full font-semibold ${color.bg} ${color.text}`}>{task.category}</div>
+                    <div className={`text-xs px-2.5 py-1 rounded-full font-semibold ${color.bg} ${color.text}`}>{task.category}</div>
                     <div className="flex items-center gap-1">
-                        {!task.completed && <motion.button onClick={() => onTogglePin(task.id)} className={`bg-transparent transition-colors mt-0.5 ${task.isPinned ? 'text-amber-400' : 'text-[var(--color-text-primary)]/40 hover:text-amber-400'}`} whileTap={{ scale: 0.9 }} title="Pin Task"><PinIcon className="w-5 h-5" /></motion.button>}
+                        {!task.completed && (
+                            <motion.button 
+                                onClick={() => onTogglePin(task.id)} 
+                                className={`p-1.5 rounded-lg transition-colors ${task.isPinned ? 'text-amber-400' : 'text-[var(--color-text-primary)]/40 hover:text-amber-400 hover:bg-white/5'}`} 
+                                whileTap={{ scale: 0.9 }} 
+                                title="Pin Task"
+                                aria-label={task.isPinned ? "Unpin task" : "Pin task"}
+                            >
+                                <PinIcon className="w-5 h-5" />
+                            </motion.button>
+                        )}
                         
-                        {task.completed && <motion.button onClick={() => onArchive(task.id)} className="bg-transparent text-[var(--color-text-primary)]/40 hover:text-[var(--color-accent)] transition-colors mt-0.5" whileTap={{ scale: 0.9 }} title="Archive Task"><ArchiveIcon className="w-5 h-5" /></motion.button>}
-                        {!task.completed && <motion.button onClick={() => onFocus(task.id)} disabled={isLocked} className="bg-transparent text-[var(--color-text-primary)]/40 hover:text-teal-400 transition-colors mt-0.5 disabled:opacity-50" whileTap={{ scale: 0.9 }} title="Focus on Task"><PlayIcon className="w-5 h-5" /></motion.button>}
-                        <motion.button onClick={() => onDelete(task.id)} className="bg-transparent text-[var(--color-text-primary)]/40 hover:text-rose-400 transition-colors mt-0.5" whileTap={{ scale: 0.9 }} title="Delete Task"><XIcon className="w-5 h-5"/></motion.button>
+                        {task.completed && (
+                            <motion.button 
+                                onClick={() => onArchive(task.id)} 
+                                className="p-1.5 rounded-lg text-[var(--color-text-primary)]/40 hover:text-[var(--color-accent)] hover:bg-white/5 transition-colors" 
+                                whileTap={{ scale: 0.9 }} 
+                                title="Archive Task"
+                                aria-label="Archive task"
+                            >
+                                <ArchiveIcon className="w-5 h-5" />
+                            </motion.button>
+                        )}
+                        {!task.completed && (
+                            <motion.button 
+                                onClick={() => onFocus(task.id)} 
+                                disabled={isLocked} 
+                                className="p-1.5 rounded-lg text-[var(--color-text-primary)]/40 hover:text-teal-400 hover:bg-white/5 transition-colors disabled:opacity-50" 
+                                whileTap={{ scale: 0.9 }} 
+                                title="Focus on Task"
+                                aria-label="Start focus session"
+                            >
+                                <PlayIcon className="w-5 h-5" />
+                            </motion.button>
+                        )}
+                        <motion.button 
+                            onClick={() => onDelete(task.id)} 
+                            className="p-1.5 rounded-lg text-[var(--color-text-primary)]/40 hover:text-rose-400 hover:bg-white/5 transition-colors" 
+                            whileTap={{ scale: 0.9 }} 
+                            title="Delete Task"
+                            aria-label="Delete task"
+                        >
+                            <XIcon className="w-5 h-5"/>
+                        </motion.button>
                     </div>
                 </div>
             </div>
             {totalSubtasks > 0 && (
-                <div className="mt-4 pl-12">
-                    <div className="w-full bg-[var(--color-text-primary)]/10 rounded-full h-1 mb-2">
-                        <motion.div className="bg-teal-400 h-1 rounded-full" initial={{width:0}} animate={{width: `${progress * 100}%`}} />
+                <div className="mt-3 pl-8">
+                    <div className="flex items-center justify-between text-xs text-[var(--color-text-primary)]/60 mb-1 font-medium">
+                        <span>Subtasks</span>
+                        <span>{completedSubtasks}/{totalSubtasks}</span>
+                    </div>
+                    <div className="w-full bg-[var(--color-text-primary)]/10 rounded-full h-1.5 overflow-hidden">
+                        <motion.div className="bg-teal-400 h-1.5 rounded-full" initial={{width:0}} animate={{width: `${progress * 100}%`}} transition={{ duration: 0.3 }} />
                     </div>
                 </div>
             )}
-        </motion.div> 
+        </Reorder.Item> 
     );
-};
+});
+
