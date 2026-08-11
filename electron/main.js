@@ -17,7 +17,9 @@ let mainWindow = null;
 let quickCaptureWindow = null;
 let tray = null;
 let shutdownNotificationTimer = null;
+let morningNotificationTimer = null;
 let currentShutdownTime = null;
+let currentMorningTime = null;
 
 // ─── Single Instance Lock ────────────────────────────────────────────────────
 const gotLock = app.requestSingleInstanceLock();
@@ -70,12 +72,8 @@ function createMainWindow() {
         mainWindow.focus();
     });
 
-    // Minimize to tray instead of quitting on close
-    mainWindow.on('close', (e) => {
-        if (!app.isQuitting) {
-            e.preventDefault();
-            mainWindow.hide();
-        }
+    mainWindow.on('closed', () => {
+        mainWindow = null;
     });
 }
 
@@ -200,6 +198,42 @@ function scheduleShutdownNotification(timeStr) {
     }, msUntil);
 }
 
+// ─── Morning Notification ───────────────────────────────────────────────────
+function scheduleMorningNotification(timeStr) {
+    if (morningNotificationTimer) clearTimeout(morningNotificationTimer);
+    currentMorningTime = timeStr;
+
+    const [hours, minutes] = timeStr.split(':').map(Number);
+    const now = new Date();
+    const target = new Date();
+    target.setHours(hours, minutes, 0, 0);
+
+    // If target has passed today, schedule for tomorrow
+    if (target <= now) {
+        target.setDate(target.getDate() + 1);
+    }
+
+    const msUntil = target.getTime() - now.getTime();
+
+    morningNotificationTimer = setTimeout(() => {
+        if (Notification.isSupported()) {
+            const notif = new Notification({
+                title: 'Good morning, Aura',
+                body: "Plan your day and set your Most Important Tasks.",
+                icon: path.join(__dirname, 'assets', 'icon.ico'),
+            });
+            notif.on('click', () => {
+                mainWindow.show();
+                mainWindow.focus();
+                mainWindow.webContents.send('trigger-morning-ritual');
+            });
+            notif.show();
+        }
+        // Schedule next day's notification
+        scheduleMorningNotification(timeStr);
+    }, msUntil);
+}
+
 // ─── IPC Handlers ─────────────────────────────────────────────────────────────
 function registerIPCHandlers() {
     // Pick any file from disk
@@ -217,7 +251,7 @@ function registerIPCHandlers() {
         const attachments = [];
         for (const filePath of result.filePaths) {
             const fileName = path.basename(filePath);
-            const fileId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+            const fileId = `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
             const destPath = path.join(taskDir, `${fileId}-${fileName}`);
             fs.copyFileSync(filePath, destPath);
             const stats = fs.statSync(destPath);
@@ -257,6 +291,11 @@ function registerIPCHandlers() {
         scheduleShutdownNotification(timeStr);
     });
 
+    // Receive morning time setting from renderer
+    ipcMain.on('settings:morningTime', (_, timeStr) => {
+        scheduleMorningNotification(timeStr);
+    });
+
     // Quick capture: add task and close overlay window
     ipcMain.on('quick-capture:submit', (_, taskText) => {
         if (mainWindow) {
@@ -273,7 +312,7 @@ function registerIPCHandlers() {
         }
     });
 
-    // Native Silent Backup to Documents/Aura_Backups
+    // Native Silent Backup to Documents/Aura_Backups with 30-day rotation
     ipcMain.handle('fs:backupData', async (_, data) => {
         try {
             const backupsDir = path.join(os.homedir(), 'Documents', 'Aura_Backups');
@@ -283,6 +322,19 @@ function registerIPCHandlers() {
             const today = new Date().toISOString().split('T')[0];
             const filePath = path.join(backupsDir, `aura-backup-${today}.json`);
             fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf-8');
+
+            // 30-day rotation logic
+            const files = fs.readdirSync(backupsDir).filter(f => f.startsWith('aura-backup-') && f.endsWith('.json'));
+            if (files.length > 30) {
+                // Sort by date (assuming YYYY-MM-DD format in filename)
+                files.sort();
+                // Delete oldest files
+                const filesToDelete = files.slice(0, files.length - 30);
+                for (const file of filesToDelete) {
+                    fs.unlinkSync(path.join(backupsDir, file));
+                }
+            }
+
             return { success: true, filePath };
         } catch (err) {
             console.error('Backup error:', err);
@@ -319,25 +371,38 @@ function registerIPCHandlers() {
     });
 }
 
+function checkForUpdates() {
+    if (isDev) return;
+    try {
+        const { autoUpdater } = require('electron-updater');
+        autoUpdater.checkForUpdatesAndNotify().catch(err => {
+            console.log('Auto updater check failed:', err);
+        });
+    } catch (e) {
+        console.log('electron-updater not available:', e.message);
+    }
+}
+
 // ─── App Lifecycle ────────────────────────────────────────────────────────────
 app.whenReady().then(() => {
     createMainWindow();
     createTray();
     registerIPCHandlers();
+    checkForUpdates();
 
     // Register global shortcut for Quick Capture
     globalShortcut.register('CommandOrControl+Shift+Space', () => {
         createQuickCaptureWindow();
     });
 
-    // Start with a default shutdown notification (6 PM)
+    // Start with default notifications
     scheduleShutdownNotification('18:00');
+    scheduleMorningNotification('09:00');
 });
 
-app.on('window-all-closed', (e) => {
-    // On Windows, keep the app running in tray
+app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') {
-        // Don't quit — it lives in the tray
+        app.quit();
     }
 });
 
@@ -348,4 +413,5 @@ app.on('activate', () => {
 app.on('will-quit', () => {
     globalShortcut.unregisterAll();
     if (shutdownNotificationTimer) clearTimeout(shutdownNotificationTimer);
+    if (morningNotificationTimer) clearTimeout(morningNotificationTimer);
 });

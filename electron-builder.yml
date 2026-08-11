@@ -20,6 +20,20 @@ win:
   icon: electron/assets/icon.ico
   requestedExecutionLevel: asInvoker
 
+mac:
+  target:
+    - target: dmg
+    - target: zip
+  icon: electron/assets/icon.ico
+  category: public.app-category.productivity
+
+linux:
+  target:
+    - target: AppImage
+    - target: deb
+  icon: electron/assets/icon.ico
+  category: Utility
+
 nsis:
   oneClick: false
   perMachine: false
@@ -32,3 +46,4 @@ nsis:
   shortcutName: Aura
 
 publish: null
+

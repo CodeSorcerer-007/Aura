@@ -12,6 +12,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
     // Settings sync
     sendShutdownTime: (time) => ipcRenderer.send('settings:shutdownTime', time),
+    sendMorningTime: (time) => ipcRenderer.send('settings:morningTime', time),
     getStartupEnabled: () => ipcRenderer.invoke('startup:getEnabled'),
     setStartupEnabled: (enabled) => ipcRenderer.send('startup:setEnabled', enabled),
 
@@ -24,4 +25,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
         ipcRenderer.on('add-task-from-capture', (_, text) => callback(text));
         return () => ipcRenderer.removeAllListeners('add-task-from-capture');
     },
+    onTriggerMorningRitual: (callback) => {
+        ipcRenderer.on('trigger-morning-ritual', () => callback());
+        return () => ipcRenderer.removeAllListeners('trigger-morning-ritual');
+    }
 });

@@ -72,7 +72,7 @@ Your tasks grow into a visual garden. Complete tasks → plant seeds → watch y
 
 ## 🚀 Installation & Building
 
-Aura v2.0 is a native Electron application for Windows.
+Aura v3.0 is a native Electron application for Windows, macOS, and Linux.
 
 ### Build from Source
 ```bash
@@ -83,10 +83,10 @@ npm install
 # Run in Development Mode
 npm run electron:dev
 
-# Build the Windows Installer (.exe)
+# Build the Installers (Windows .exe, macOS .dmg, Linux .AppImage)
 npm run electron:build
 ```
-The compiled installer will be available in the `dist` folder.
+The compiled installers will be available in the `release` folder.
 
 <br/>
 
@@ -108,6 +108,7 @@ The compiled installer will be available in the `dist` folder.
 - 🚫 **Zero telemetry.** No analytics, no tracking, no crash reporting.
 - 🚫 **Zero network requests.** Fully offline.
 - 💾 **Local Data.** All databases and file attachments live exclusively on your hard drive (`%APPDATA%\Aura`).
+- 🔄 **Auto-Backups.** Automatic daily 30-day rolling JSON backups to your Documents folder.
 - ☁️ **No Cloud.** You own your data.
 
 <br/>

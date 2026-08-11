@@ -65,9 +65,38 @@ export default defineConfig({
       }
     })
   ],
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('react') || id.includes('react-dom')) {
+              return 'vendor-react';
+            }
+            if (id.includes('framer-motion')) {
+              return 'vendor-motion';
+            }
+            if (id.includes('tone')) {
+              return 'vendor-audio';
+            }
+            if (id.includes('@tanstack')) {
+              return 'vendor-virtual';
+            }
+            return 'vendor-libs';
+          }
+        }
+      }
+    }
+  },
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    setupFiles: ['./src/test/setup.ts']
+  },
   server: {
     port: 3000,
     host: true
   },
   base: './',
 });
+

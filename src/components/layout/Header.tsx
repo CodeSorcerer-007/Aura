@@ -1,0 +1,73 @@
+import React from 'react';
+import { motion } from 'framer-motion';
+import { WindIcon, Share2Icon, SearchIcon, SettingsIcon, ZapIcon, HelpCircleIcon } from '../icons/Icons';
+
+interface HeaderProps {
+    momentumProgress: number;
+    onSettingsClick: () => void;
+    onSearchClick: () => void;
+    onMindfulClick: () => void;
+    dailyQuote: { quote: string; author: string };
+    onShare: () => void;
+    onShortcutsClick?: () => void;
+}
+
+export const Header: React.FC<HeaderProps> = ({ momentumProgress, onSettingsClick, onSearchClick, onMindfulClick, dailyQuote, onShare, onShortcutsClick }) => (
+    <motion.header initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="text-center mb-8 relative pt-4" style={{ WebkitAppRegion: 'drag' } as React.CSSProperties}>
+        <div className="absolute top-4 left-0 flex items-center gap-4" style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}>
+             <button onClick={onMindfulClick} className="bg-transparent text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors" title="Mindful Minute">
+                <WindIcon className="w-6 h-6"/>
+            </button>
+            <button onClick={onShare} className="bg-transparent text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors" title="Share Today's Wins">
+                <Share2Icon className="w-6 h-6"/>
+            </button>
+        </div>
+        <div className="absolute top-4 right-0 flex items-center gap-4" style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}>
+          {onShortcutsClick && (
+            <button onClick={onShortcutsClick} className="bg-transparent text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors" title="Keyboard Shortcuts (?)">
+              <HelpCircleIcon className="w-6 h-6"/>
+            </button>
+          )}
+          <button onClick={onSearchClick} className="bg-transparent text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors" title="Search tasks (Ctrl+P)"><SearchIcon className="w-6 h-6"/></button>
+          <button onClick={onSettingsClick} className="bg-transparent text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors" title="Settings (S)"><SettingsIcon className="w-6 h-6"/></button>
+        </div>
+
+        <h1 className="text-4xl font-bold tracking-tight text-[var(--color-text-primary)]">Aura</h1>
+        <p className="text-[var(--color-text-secondary)] mb-4 italic">"{dailyQuote.quote}" - {dailyQuote.author}</p>
+        <div className="max-w-xs mx-auto">
+            <div className="flex items-center gap-2 text-xs text-amber-300">
+                <ZapIcon className="w-4 h-4" />
+                <span>Daily Momentum</span>
+            </div>
+            <div className="w-full bg-[var(--color-text-primary)]/10 rounded-full h-1.5 mt-1">
+                <motion.div className="bg-amber-400 h-1.5 rounded-full" initial={{width: 0}} animate={{width: `${momentumProgress * 100}%`}} transition={{ type: 'spring' }} />
+            </div>
+        </div>
+    </motion.header>
+);
+
+interface AssistantPromptProps {
+    message: string;
+    action?: string;
+    onAction?: () => void;
+    onClose?: () => void;
+    showNext?: boolean;
+    onNext?: () => void;
+}
+
+export const AssistantPrompt: React.FC<AssistantPromptProps> = ({ message, action, onAction, onClose, showNext, onNext }) => (
+    <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="max-w-2xl mx-auto mb-6 p-3 bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-lg text-center text-sm relative">
+        {onClose && (
+            <button onClick={onClose} className="absolute top-2 right-2 text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] p-1 text-xs" title="Dismiss">
+                ✕
+            </button>
+        )}
+        <p className="text-[var(--color-text-primary)]/80 pr-6">{message}</p>
+        {(action || showNext) && (
+            <div className="flex justify-center items-center gap-4 mt-2">
+                {action && <button onClick={onAction} className="text-sm bg-indigo-500/80 px-3 py-1 rounded-full hover:bg-indigo-500 text-white">{action}</button>}
+                {showNext && <button onClick={onNext} className="text-sm bg-teal-500/80 px-3 py-1 rounded-full hover:bg-teal-500 text-white">Next →</button>}
+            </div>
+        )}
+    </motion.div>
+);
