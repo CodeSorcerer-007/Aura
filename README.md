@@ -76,7 +76,7 @@ Aura v3.0 is a native Electron application for Windows, macOS, and Linux.
 
 ### Build from Source
 ```bash
-git clone https://github.com/your-username/aura.git
+git clone https://github.com/CodeSorcerer-007/Aura.git
 cd aura
 npm install
 
