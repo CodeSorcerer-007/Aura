@@ -47,6 +47,7 @@ export const MorningRitualModal = ({ isOpen, tasks, onClose, onSetMITs }) => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-xl p-4"
+            style={{ WebkitAppRegion: 'no-drag' }}
         >
             <motion.div
                 initial={{ opacity: 0, y: 30, scale: 0.96 }}

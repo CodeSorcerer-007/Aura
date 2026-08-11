@@ -31,7 +31,7 @@ export const MindfulMinuteModal = ({ isOpen, onClose }) => {
     if(!isOpen) return null;
 
     return (
-        <motion.div ref={trapRef} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/90 backdrop-blur-xl z-[80] flex flex-col items-center justify-center p-4">
+        <motion.div ref={trapRef} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/90 backdrop-blur-xl z-[80] flex flex-col items-center justify-center p-4" style={{ WebkitAppRegion: 'no-drag' }}>
              <motion.div 
                 className="w-48 h-48 rounded-full border-2 border-[var(--color-accent)]"
                 animate={{ 

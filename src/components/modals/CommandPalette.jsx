@@ -44,7 +44,7 @@ export const CommandPalette = ({ isOpen, onClose, commands }) => {
     if (!isOpen) return null;
 
     return (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/80 backdrop-blur-lg z-[90] flex items-start justify-center pt-20 p-4">
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/80 backdrop-blur-lg z-[90] flex items-start justify-center pt-20 p-4" style={{ WebkitAppRegion: 'no-drag' }}>
             <motion.div ref={trapRef} initial={{ scale: 0.9, y: -20 }} animate={{ scale: 1, y: 0 }} className="w-full max-w-lg bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-2xl overflow-hidden shadow-2xl">
                 <input
                     ref={inputRef}

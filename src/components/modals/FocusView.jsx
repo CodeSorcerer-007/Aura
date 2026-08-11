@@ -101,7 +101,7 @@ export const FocusView = ({ task, onClose, onComplete, onLogDistraction }) => {
     const progress = ((duration * 60) - timeLeft) / (duration * 60);
 
     return (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/90 backdrop-blur-xl z-50 flex items-center justify-center p-4">
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/90 backdrop-blur-xl z-50 flex items-center justify-center p-4" style={{ WebkitAppRegion: 'no-drag' }}>
             <motion.div initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} className="w-full max-w-md text-center relative">
 
                 {/* Distraction Log Button — only visible when timer is active */}
