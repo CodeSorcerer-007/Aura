@@ -59,7 +59,7 @@ export const CommandPalette = ({ isOpen, onClose, commands }) => {
                     {filteredCommands.length > 0 ? (
                         filteredCommands.map((cmd, index) => (
                             <div
-                                key={cmd.id}
+                                key={cmd.id || cmd.label || index}
                                 onClick={() => { cmd.action(); onClose(); }}
                                 className={`p-3 rounded-lg flex justify-between items-center cursor-pointer ${selectedIndex === index ? 'bg-[var(--color-accent)] text-black font-semibold' : 'hover:bg-[var(--color-bg-secondary-hover)]'}`}
                             >

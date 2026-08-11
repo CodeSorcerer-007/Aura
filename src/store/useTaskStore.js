@@ -43,6 +43,27 @@ export const useTaskStore = create((set, get) => ({
         });
     },
 
+    setTemplates: (updater) => {
+        set((state) => {
+            const nextTemplates = typeof updater === 'function' ? updater(state.templates) : updater;
+            setDBItem('aura-templates', nextTemplates);
+            return { templates: nextTemplates };
+        });
+    },
+
+    // Reorder a single task within its current position (used by SearchModal drag)
+    reorderTask: (newOrder) => {
+        set((state) => {
+            const updatedIds = newOrder.map(t => t.id);
+            const updatedTasks = state.tasks.map(t => {
+                const pos = updatedIds.indexOf(t.id);
+                return pos !== -1 ? { ...t, order: pos } : t;
+            });
+            setDBItem('aura-tasks', updatedTasks);
+            return { tasks: updatedTasks };
+        });
+    },
+
     setJournalEntries: (updater) => {
         set((state) => {
             const nextJournal = typeof updater === 'function' ? updater(state.journalEntries) : updater;

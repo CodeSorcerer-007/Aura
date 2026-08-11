@@ -72,15 +72,6 @@ export function useAppState() {
     }, [initialLoadDone, isLoading, hasLaunched, setTasks, setHasLaunched]);
 
     useEffect(() => {
-        if (toastMessage) {
-            const timer = setTimeout(() => {
-                setToastMessage(null);
-            }, 5000);
-            return () => clearTimeout(timer);
-        }
-    }, [toastMessage]);
-
-    useEffect(() => {
         const updateTimeOfDay = () => {
             const hour = new Date().getHours(); 
             if (hour >= 5 && hour < 12) setTimeOfDay('morning'); 
@@ -268,19 +259,19 @@ export function useAppState() {
         return { completed: completedToday, focusSessions: focusToday, achievements: achievementsToday };
     }, [tasks, unlockedAchievements]);
 
-    const shutdownRitualMessages = [
+    const shutdownRitualMessages = useMemo(() => [
         `Let's wind down for the day. You completed ${tasksCompletedToday} tasks today. How do you feel?`,
         "Is there anything left on your mind? Capture any final thoughts for tomorrow.",
         "Your mind is clear. It's time to disconnect. See you tomorrow!"
-    ];
+    ], [tasksCompletedToday]);
     
     useEffect(() => {
         if (shutdownRitual.active) {
             setAssistantMessage({ message: shutdownRitualMessages[shutdownRitual.step] });
-        } else if (!shutdownRitual.active && assistantMessage?.message.startsWith("Let's wind down")) {
+        } else if (!shutdownRitual.active && assistantMessage?.message?.startsWith("Let's wind down")) {
             setAssistantMessage(null);
         }
-    }, [shutdownRitual]);
+    }, [shutdownRitual, shutdownRitualMessages, assistantMessage, setAssistantMessage]);
 
     const baseThemes = [
         { id: 'dark', name: 'OLED Dark', bg: 'bg-black', text: 'text-white' },
@@ -394,17 +385,17 @@ export function useAppState() {
     }, [isCommandPaletteOpen, isSearchOpen, isSettingsOpen, detailModal.isOpen, focusTaskId, isMindfulMinuteOpen, isThemeCreatorOpen]);
 
     const commands = useMemo(() => [
-        { label: "New Task", action: () => document.querySelector('input[placeholder*="Capture a thought"]')?.focus(), shortcut: "N" },
-        { label: "Open Search", action: () => setIsSearchOpen(true), shortcut: "" },
-        { label: "Open Settings", action: () => setIsSettingsOpen(true), shortcut: "S" },
-        { label: "Toggle Theme: Dark", action: () => setTheme('dark'), shortcut: "" },
-        { label: "Toggle Theme: Light", action: () => setTheme('light'), shortcut: "" },
-        { label: "Go to Flow", action: () => setCurrentView('flow'), shortcut: "1" },
-        { label: "Go to Projects", action: () => setCurrentView('constellations'), shortcut: "2" },
-        { label: "Go to Grove", action: () => setCurrentView('grove'), shortcut: "3" },
-        { label: "Go to Journal", action: () => setCurrentView('journal'), shortcut: "4" },
-        { label: "Go to Review", action: () => setCurrentView('review'), shortcut: "5" },
-    ], [setTheme]);
+        { id: 'cmd-new-task', label: "New Task", action: () => document.querySelector('input[placeholder*="Capture a thought"]')?.focus(), shortcut: "N" },
+        { id: 'cmd-search', label: "Open Search", action: () => setIsSearchOpen(true), shortcut: "" },
+        { id: 'cmd-settings', label: "Open Settings", action: () => setIsSettingsOpen(true), shortcut: "S" },
+        { id: 'cmd-theme-dark', label: "Toggle Theme: Dark", action: () => setTheme('dark'), shortcut: "" },
+        { id: 'cmd-theme-light', label: "Toggle Theme: Light", action: () => setTheme('light'), shortcut: "" },
+        { id: 'cmd-view-flow', label: "Go to Flow", action: () => setCurrentView('flow'), shortcut: "1" },
+        { id: 'cmd-view-projects', label: "Go to Projects", action: () => setCurrentView('constellations'), shortcut: "2" },
+        { id: 'cmd-view-grove', label: "Go to Grove", action: () => setCurrentView('grove'), shortcut: "3" },
+        { id: 'cmd-view-journal', label: "Go to Journal", action: () => setCurrentView('journal'), shortcut: "4" },
+        { id: 'cmd-view-review', label: "Go to Review", action: () => setCurrentView('review'), shortcut: "5" },
+    ], [setTheme, setIsSearchOpen, setIsSettingsOpen, setCurrentView]);
 
     return {
         tasks, setTasks, templates, setTemplates, stats, setStats, unlockedAchievements, setUnlockedAchievements,
