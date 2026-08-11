@@ -89,12 +89,12 @@ export default function App() {
                         />}
                         </AnimatePresence>
                         <AnimatePresence mode="wait">
-                            {currentView === 'flow' && <FlowView key="flow" tasks={filteredTasks} toggleTask={toggleTask} deleteTask={deleteTask} onFocus={setFocusTaskId} activeFilter={activeFilter} setActiveFilter={setActiveFilter} updateTaskOrderAndSection={updateTaskOrderAndSection} onToggleSubtask={toggleSubtask} allTasks={tasks} allCategories={allCategories} onOpenDetail={(id) => setDetailModal({isOpen: true, taskId: id})} onTogglePin={togglePin} onArchive={archiveTask} />}
-                            {currentView === 'calendar' && <CalendarView key="calendar" tasks={tasks} toggleTask={toggleTask} onFocus={setFocusTaskId} onOpenDetail={(id) => setDetailModal({isOpen: true, taskId: id})} allCategories={allCategories} />}
-                            {currentView === 'constellations' && <ConstellationsView key="constellations" tasks={tasks} toggleTask={toggleTask} onSaveTemplate={saveTemplate} templates={templates} allCategories={allCategories} />}
-                            {currentView === 'grove' && <GroveView key="grove" tasks={tasks} grove={grove} goldenSeeds={stats.goldenSeeds} onPlantSeed={handlePlantSeed} allCategories={allCategories} />}
-                            {currentView === 'journal' && <JournalView key="journal" journalEntries={journalEntries} setJournalEntries={setJournalEntries} completedTasks={tasks.filter(t => t.completed && !t.isArchived)} />}
-                            {currentView === 'review' && <ReviewView key="review" tasks={tasks} achievements={unlockedAchievements} allCategories={allCategories} stats={stats} onDeleteStale={deleteTask} />}
+                            {currentView === 'flow' ? <FlowView key="flow" tasks={filteredTasks} toggleTask={toggleTask} deleteTask={deleteTask} onFocus={setFocusTaskId} activeFilter={activeFilter} setActiveFilter={setActiveFilter} updateTaskOrderAndSection={updateTaskOrderAndSection} onToggleSubtask={toggleSubtask} allTasks={tasks} allCategories={allCategories} onOpenDetail={(id) => setDetailModal({isOpen: true, taskId: id})} onTogglePin={togglePin} onArchive={archiveTask} /> :
+                            currentView === 'calendar' ? <CalendarView key="calendar" tasks={tasks} toggleTask={toggleTask} onFocus={setFocusTaskId} onOpenDetail={(id) => setDetailModal({isOpen: true, taskId: id})} allCategories={allCategories} /> :
+                            currentView === 'constellations' ? <ConstellationsView key="constellations" tasks={tasks} toggleTask={toggleTask} onSaveTemplate={saveTemplate} templates={templates} allCategories={allCategories} /> :
+                            currentView === 'grove' ? <GroveView key="grove" tasks={tasks} grove={grove} goldenSeeds={stats.goldenSeeds} onPlantSeed={handlePlantSeed} allCategories={allCategories} /> :
+                            currentView === 'journal' ? <JournalView key="journal" journalEntries={journalEntries} setJournalEntries={setJournalEntries} completedTasks={tasks.filter(t => t.completed && !t.isArchived)} /> :
+                            currentView === 'review' ? <ReviewView key="review" tasks={tasks} achievements={unlockedAchievements} allCategories={allCategories} stats={stats} onDeleteStale={deleteTask} /> : null}
                         </AnimatePresence>
                     </main>
                     <CaptureInput onAddTask={addTask} />

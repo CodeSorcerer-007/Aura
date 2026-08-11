@@ -1,7 +1,7 @@
 <div align="center">
   <img src="Logo.png" width="120" alt="Aura Logo" />
   
-  # 🌿 Aura v2.0
+  # 🌿 Aura v3.0
   **Mindful Productivity for Windows**
 
   <p>
