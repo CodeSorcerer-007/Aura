@@ -80,3 +80,23 @@ export const sendShutdownTime = (time) => {
         window.electronAPI.sendShutdownTime(time);
     }
 };
+
+/**
+ * Perform native silent backup to Documents/Aura_Backups.
+ */
+export const performNativeBackup = async (data) => {
+    if (isElectron()) {
+        return await window.electronAPI.backupData(data);
+    }
+    return { success: false, error: 'Not in Electron environment' };
+};
+
+/**
+ * Open native file dialog to restore backup data.
+ */
+export const performNativeRestore = async () => {
+    if (isElectron()) {
+        return await window.electronAPI.restoreData();
+    }
+    return null;
+};

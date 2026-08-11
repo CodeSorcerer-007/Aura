@@ -1,8 +1,7 @@
-import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-
-// Hooks
-import { useAppState } from './hooks/useAppState';
+import { useAppLogic } from './hooks/useAppLogic';
+import { useUIStore } from './store/useUIStore';
+import { useSettingsStore } from './store/useSettingsStore';
+import { useTaskStore } from './store/useTaskStore';
 
 // Components
 import { Header, AssistantPrompt } from './components/layout/Header';
@@ -33,28 +32,234 @@ import { WinModal } from './components/modals/WinModal';
 import { MorningRitualModal } from './components/modals/MorningRitualModal';
 import { QuickCaptureOverlay } from './components/modals/QuickCaptureOverlay';
 
+import { motivationalQuotes, defaultCategories } from './utils/helpers';
+
 export default function App() {
-    const {
-        tasks, setTasks, templates, setTemplates, stats, setStats, unlockedAchievements, setUnlockedAchievements,
-        theme, setTheme, grove, setGrove, customCategories, setCustomCategories, hasLaunched, setHasLaunched,
-        journalEntries, setJournalEntries, customThemes, setCustomThemes, shutdownTime, setShutdownTime,
-        soundEffectsEnabled, setSoundEffectsEnabled, autoArchiveEnabled, setAutoArchiveEnabled,
-        notificationsEnabled, setNotificationsEnabled, isLoading, currentView, setCurrentView,
-        focusTaskId, setFocusTaskId, winModalTaskId, setWinModalTaskId, assistantMessage, setAssistantMessage,
-        templateSuggestion, setTemplateSuggestion, activeFilter, setActiveFilter, achievementToast, setAchievementToast,
-        isSettingsOpen, setIsSettingsOpen, isPlanting, setIsPlanting, isSearchOpen, setIsSearchOpen,
-        detailModal, setDetailModal, isMindfulMinuteOpen, setIsMindfulMinuteOpen, isThemeCreatorOpen, setIsThemeCreatorOpen,
-        shutdownRitual, setShutdownRitual, toastMessage, setToastMessage, isArchiveOpen, setIsArchiveOpen,
-        isShareSummaryOpen, setIsShareSummaryOpen, isCommandPaletteOpen, setIsCommandPaletteOpen, importInputRef,
-        allCategories, allThemes, focusTask, momentumProgress, filteredTasks, detailTask, dailyQuote, dailyStats,
-        shutdownRitualMessages, commands,
-        requestNotificationPermission, handleSetNotifications, showNotification, playSoundEffect, addTask,
-        toggleTask, togglePin, handleSkipWin, saveWin, deleteTask, archiveTask, restoreTask, saveTaskDetail,
-        setTaskDependency, addAttachmentToTask, deleteAttachmentFromTask, saveTemplate, handlePlantSeed, finishPlanting,
-        reorderTask, updateTaskOrderAndSection, toggleSubtask, handleFocusComplete, handleExport, handleImport,
-        isMorningRitualOpen, setIsMorningRitualOpen, isQuickCaptureOpen, setIsQuickCaptureOpen,
-        handleSetMITs, logDistraction
-    } = useAppState();
+    // Run headless background logic
+    useAppLogic();
+
+    // Store selectors
+    const isLoading = useTaskStore(s => s.isLoading);
+    const tasks = useTaskStore(s => s.tasks);
+    const templates = useTaskStore(s => s.templates);
+    const journalEntries = useTaskStore(s => s.journalEntries);
+    const customCategories = useTaskStore(s => s.customCategories);
+    const addTask = useTaskStore(s => s.addTask);
+    const toggleTask = useTaskStore(s => s.toggleTask);
+    const deleteTask = useTaskStore(s => s.deleteTask);
+    const archiveTask = useTaskStore(s => s.archiveTask);
+    const restoreTask = useTaskStore(s => s.restoreTask);
+    const saveTaskDetail = useTaskStore(s => s.saveTaskDetail);
+    const setTaskDependency = useTaskStore(s => s.setTaskDependency);
+    const addAttachmentToTask = useTaskStore(s => s.addAttachmentToTask);
+    const deleteAttachmentFromTask = useTaskStore(s => s.deleteAttachmentFromTask);
+    const saveTemplate = useTaskStore(s => s.saveTemplate);
+    const reorderTask = useTaskStore(s => s.reorderTask);
+    const updateTaskOrderAndSection = useTaskStore(s => s.updateTaskOrderAndSection);
+    const toggleSubtask = useTaskStore(s => s.toggleSubtask);
+    const togglePin = useTaskStore(s => s.togglePin);
+    const logDistraction = useTaskStore(s => s.logDistraction);
+    const setTasks = useTaskStore(s => s.setTasks);
+    const setJournalEntries = useTaskStore(s => s.setJournalEntries);
+
+    const theme = useSettingsStore(s => s.theme);
+    const setTheme = useSettingsStore(s => s.setTheme);
+    const grove = useSettingsStore(s => s.grove);
+    const setGrove = useSettingsStore(s => s.setGrove);
+    const stats = useSettingsStore(s => s.stats);
+    const setStats = useSettingsStore(s => s.setStats);
+    const unlockedAchievements = useSettingsStore(s => s.unlockedAchievements);
+    const customThemes = useSettingsStore(s => s.customThemes);
+    const setCustomThemes = useSettingsStore(s => s.setCustomThemes);
+    const shutdownTime = useSettingsStore(s => s.shutdownTime);
+    const setShutdownTime = useSettingsStore(s => s.setShutdownTime);
+    const soundEffectsEnabled = useSettingsStore(s => s.soundEffectsEnabled);
+    const setSoundEffectsEnabled = useSettingsStore(s => s.setSoundEffectsEnabled);
+    const autoArchiveEnabled = useSettingsStore(s => s.autoArchiveEnabled);
+    const setAutoArchiveEnabled = useSettingsStore(s => s.setAutoArchiveEnabled);
+    const notificationsEnabled = useSettingsStore(s => s.notificationsEnabled);
+    const setNotificationsEnabled = useSettingsStore(s => s.setNotificationsEnabled);
+    const playSoundEffect = useSettingsStore(s => s.playSoundEffect);
+
+    const currentView = useUIStore(s => s.currentView);
+    const setCurrentView = useUIStore(s => s.setCurrentView);
+    const assistantMessage = useUIStore(s => s.assistantMessage);
+    const setAssistantMessage = useUIStore(s => s.setAssistantMessage);
+    const shutdownRitual = useUIStore(s => s.shutdownRitual);
+    const setShutdownRitual = useUIStore(s => s.setShutdownRitual);
+    const activeFilter = useUIStore(s => s.activeFilter);
+    const setActiveFilter = useUIStore(s => s.setActiveFilter);
+    const focusTaskId = useUIStore(s => s.focusTaskId);
+    const setFocusTaskId = useUIStore(s => s.setFocusTaskId);
+    const winModalTaskId = useUIStore(s => s.winModalTaskId);
+    const setWinModalTaskId = useUIStore(s => s.setWinModalTaskId);
+    const achievementToast = useUIStore(s => s.achievementToast);
+    const setAchievementToast = useUIStore(s => s.setAchievementToast);
+    const toastMessage = useUIStore(s => s.toastMessage);
+    const setToastMessage = useUIStore(s => s.setToastMessage);
+    const detailModal = useUIStore(s => s.detailModal);
+    const setDetailModal = useUIStore(s => s.setDetailModal);
+    const isSettingsOpen = useUIStore(s => s.isSettingsOpen);
+    const setIsSettingsOpen = useUIStore(s => s.setIsSettingsOpen);
+    const isPlanting = useUIStore(s => s.isPlanting);
+    const setIsPlanting = useUIStore(s => s.setIsPlanting);
+    const isSearchOpen = useUIStore(s => s.isSearchOpen);
+    const setIsSearchOpen = useUIStore(s => s.setIsSearchOpen);
+    const isMindfulMinuteOpen = useUIStore(s => s.isMindfulMinuteOpen);
+    const setIsMindfulMinuteOpen = useUIStore(s => s.setIsMindfulMinuteOpen);
+    const isThemeCreatorOpen = useUIStore(s => s.isThemeCreatorOpen);
+    const setIsThemeCreatorOpen = useUIStore(s => s.setIsThemeCreatorOpen);
+    const isArchiveOpen = useUIStore(s => s.isArchiveOpen);
+    const setIsArchiveOpen = useUIStore(s => s.setIsArchiveOpen);
+    const isShareSummaryOpen = useUIStore(s => s.isShareSummaryOpen);
+    const setIsShareSummaryOpen = useUIStore(s => s.setIsShareSummaryOpen);
+    const isCommandPaletteOpen = useUIStore(s => s.isCommandPaletteOpen);
+    const setIsCommandPaletteOpen = useUIStore(s => s.setIsCommandPaletteOpen);
+    const isMorningRitualOpen = useUIStore(s => s.isMorningRitualOpen);
+    const setIsMorningRitualOpen = useUIStore(s => s.setIsMorningRitualOpen);
+    const isQuickCaptureOpen = useUIStore(s => s.isQuickCaptureOpen);
+    const setIsQuickCaptureOpen = useUIStore(s => s.setIsQuickCaptureOpen);
+    const importInputRef = useUIStore(s => s.importInputRef);
+
+    // Derived values
+    const allCategories = React.useMemo(() => ({...defaultCategories, ...customCategories}), [customCategories]);
+    const baseThemes = [
+        { id: 'dark', name: 'OLED Dark', bg: 'bg-black', text: 'text-white' },
+        { id: 'light', name: 'Clean Light', bg: 'bg-gray-100', text: 'text-black' },
+        { id: 'cyberpunk', name: 'Cyberpunk', bg: 'bg-black', text: 'text-cyan-400' },
+        { id: 'crimson', name: 'Crimson', bg: 'bg-black', text: 'text-red-400' },
+        { id: 'forest', name: 'Forest', bg: 'bg-[#0b2e13]', text: 'text-[#a3b899]' },
+        { id: 'ocean', name: 'Ocean', bg: 'bg-[#001f3f]', text: 'text-[#81d4fa]' },
+        { id: 'dune', name: 'Dune', bg: 'bg-[#2a1d0c]', text: 'text-[#e3d5b8]' },
+        { id: 'sakura', name: 'Sakura', bg: 'bg-[#fef6f6]', text: 'text-[#5e2d2d]' },
+        { id: 'solarized', name: 'Solarized', bg: 'bg-[#002b36]', text: 'text-[#93a1a1]' },
+        { id: 'dracula', name: 'Dracula', bg: 'bg-[#282a36]', text: 'text-[#f8f8f2]' },
+    ];
+    const allThemes = React.useMemo(() => [...baseThemes, ...customThemes], [customThemes]);
+
+    const tasksCompletedToday = React.useMemo(() => tasks.filter(t => t.completionDate === new Date().toISOString().split('T')[0]).length, [tasks]);
+    const momentumProgress = Math.min(tasksCompletedToday / 5, 1);
+
+    const filteredTasks = React.useMemo(() => {
+        const nonArchived = tasks.filter(t => !t.isArchived);
+        if (activeFilter.type === 'all') return nonArchived;
+        if (activeFilter.type === 'priority') return nonArchived.filter(t => t.priority === 3);
+        if (activeFilter.type === 'category') return nonArchived.filter(t => t.category === activeFilter.value);
+        if (activeFilter.type === 'tag') return nonArchived.filter(t => (t.tags || []).includes(activeFilter.value));
+        if (activeFilter.type === 'due_this_week') {
+            const today = new Date();
+            const endOfWeek = new Date();
+            endOfWeek.setDate(today.getDate() + (6 - today.getDay()) + 1);
+            return nonArchived.filter(t => !t.completed && t.deadline && new Date(t.deadline) <= endOfWeek);
+        }
+        return nonArchived;
+    }, [tasks, activeFilter]);
+
+    const detailTask = React.useMemo(() => tasks.find(t => t.id === detailModal.taskId), [tasks, detailModal.taskId]);
+    const focusTask = React.useMemo(() => tasks.find(t => t.id === focusTaskId), [tasks, focusTaskId]);
+    
+    const dailyQuote = React.useMemo(() => {
+        const dayOfYear = Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 0)) / (1000 * 60 * 60 * 24));
+        return motivationalQuotes[dayOfYear % motivationalQuotes.length];
+    }, []);
+
+    const dailyStats = React.useMemo(() => {
+        const todayStr = new Date().toISOString().split('T')[0];
+        const completedToday = tasks.filter(t => t.completionDate === todayStr).length;
+        const focusToday = tasks.reduce((acc, task) => task.completionDate === todayStr ? acc + (task.focusSessions || 0) : acc, 0);
+        return { completed: completedToday, focusSessions: focusToday, achievements: unlockedAchievements.length };
+    }, [tasks, unlockedAchievements]);
+
+    const shutdownRitualMessages = [
+        `Let's wind down for the day. You completed ${tasksCompletedToday} tasks today. How do you feel?`,
+        "Is there anything left on your mind? Capture any final thoughts for tomorrow.",
+        "Your mind is clear. It's time to disconnect. See you tomorrow!"
+    ];
+
+    const commands = React.useMemo(() => [
+        { id: 'cmd-new-task', label: "New Task", action: () => document.querySelector('input[placeholder*="Capture a thought"]')?.focus(), shortcut: "N" },
+        { id: 'cmd-search', label: "Open Search", action: () => setIsSearchOpen(true), shortcut: "" },
+        { id: 'cmd-settings', label: "Open Settings", action: () => setIsSettingsOpen(true), shortcut: "S" },
+        { id: 'cmd-theme-dark', label: "Toggle Theme: Dark", action: () => setTheme('dark'), shortcut: "" },
+        { id: 'cmd-theme-light', label: "Toggle Theme: Light", action: () => setTheme('light'), shortcut: "" },
+        { id: 'cmd-view-flow', label: "Go to Flow", action: () => setCurrentView('flow'), shortcut: "1" },
+        { id: 'cmd-view-calendar', label: "Go to Calendar", action: () => setCurrentView('calendar'), shortcut: "2" },
+        { id: 'cmd-view-projects', label: "Go to Projects", action: () => setCurrentView('constellations'), shortcut: "3" },
+        { id: 'cmd-view-grove', label: "Go to Grove", action: () => setCurrentView('grove'), shortcut: "4" },
+        { id: 'cmd-view-journal', label: "Go to Journal", action: () => setCurrentView('journal'), shortcut: "5" },
+        { id: 'cmd-view-review', label: "Go to Review", action: () => setCurrentView('review'), shortcut: "6" },
+    ], [setTheme, setIsSearchOpen, setIsSettingsOpen, setCurrentView]);
+
+    const handlePlantSeed = () => {
+        if (stats.goldenSeeds > 0) {
+            setStats(prev => ({ ...prev, goldenSeeds: prev.goldenSeeds - 1 }));
+            setIsPlanting(true);
+        }
+    };
+
+    const finishPlanting = () => {
+        const unlockedTrees = ['oak'];
+        if (unlockedAchievements.includes('streak_3')) unlockedTrees.push('pine');
+        if (unlockedAchievements.includes('focused_finish')) unlockedTrees.push('cherry');
+        const randomType = unlockedTrees[Math.floor(Math.random() * unlockedTrees.length)];
+        setGrove(prev => [...prev, { id: Date.now(), growthPoints: 0, maxGrowth: 10, type: randomType }]);
+        setIsPlanting(false);
+    };
+
+    const handleFocusComplete = (taskId) => {
+        const taskText = tasks.find(t => t.id === taskId)?.text || '';
+        toggleTask(taskId);
+        setStats(s => ({...s, focusedTasksCompleted: s.focusedTasksCompleted + 1}));
+        setTasks(prevTasks => prevTasks.map(t => t.id === taskId ? {...t, focusSessions: (t.focusSessions || 0) + 1} : t));
+    };
+
+    const handleExport = () => {
+        const data = { tasks, templates, stats, unlockedAchievements, theme, grove, customCategories, journalEntries, customThemes, shutdownTime, soundEffectsEnabled, autoArchiveEnabled, notificationsEnabled };
+        const jsonString = `data:text/json;charset=utf-8,${encodeURIComponent(JSON.stringify(data, null, 2))}`;
+        const link = document.createElement('a');
+        link.href = jsonString;
+        link.download = `aura-backup-${new Date().toISOString().split('T')[0]}.json`;
+        link.click();
+        setToastMessage({ type: 'success', text: 'Data exported successfully!' });
+    };
+
+    const handleImport = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            try {
+                const data = JSON.parse(event.target.result);
+                if (data.tasks) setTasks(data.tasks);
+                if (data.templates) useTaskStore.getState().setTemplates(data.templates);
+                if (data.stats) setStats(data.stats);
+                if (data.unlockedAchievements) useSettingsStore.getState().setUnlockedAchievements(data.unlockedAchievements);
+                if (data.theme) setTheme(data.theme);
+                if (data.grove) setGrove(data.grove);
+                if (data.customCategories) useTaskStore.getState().setCustomCategories(data.customCategories);
+                if (data.journalEntries) setJournalEntries(data.journalEntries);
+                if (data.customThemes) setCustomThemes(data.customThemes);
+                if (data.shutdownTime) setShutdownTime(data.shutdownTime);
+                if (data.soundEffectsEnabled !== undefined) setSoundEffectsEnabled(data.soundEffectsEnabled);
+                if (data.autoArchiveEnabled !== undefined) setAutoArchiveEnabled(data.autoArchiveEnabled);
+                if (data.notificationsEnabled !== undefined) setNotificationsEnabled(data.notificationsEnabled);
+                setToastMessage({ type: 'success', text: 'Data imported successfully!' });
+            } catch (error) {
+                console.error("Error parsing import file:", error);
+                setToastMessage({ type: 'error', text: 'Failed to import data. Invalid file format.' });
+            } finally {
+                e.target.value = '';
+            }
+        };
+        reader.readAsText(file);
+    };
+
+    const handleSetMITs = (taskIds) => {
+        if (taskIds.length > 0) {
+            setTasks(prev => prev.map(t => ({ ...t, isPinned: taskIds.includes(t.id) || t.isPinned })));
+        }
+        setIsMorningRitualOpen(false);
+    };
 
     return (
         <div className={`theme-wrapper theme-${theme} min-h-screen font-sans antialiased bg-[var(--color-bg)] text-[var(--color-text-primary)] flex flex-col`}>
@@ -99,10 +304,10 @@ export default function App() {
                     </main>
                     <CaptureInput onAddTask={addTask} />
                     <BottomNav currentView={currentView} setCurrentView={setCurrentView} />
-                    <AnimatePresence>{isSettingsOpen && <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} theme={theme} setTheme={setTheme} customCategories={customCategories} setCustomCategories={setCustomCategories} allThemes={allThemes} onOpenThemeCreator={() => setIsThemeCreatorOpen(true)} shutdownTime={shutdownTime} onSetShutdownTime={setShutdownTime} soundEffectsEnabled={soundEffectsEnabled} onSetSoundEffectsEnabled={setSoundEffectsEnabled} onOpenArchive={() => setIsArchiveOpen(true)} autoArchiveEnabled={autoArchiveEnabled} onSetAutoArchiveEnabled={setAutoArchiveEnabled} onExport={handleExport} onTriggerImport={() => importInputRef.current?.click()} notificationsEnabled={notificationsEnabled} onSetNotificationsEnabled={handleSetNotifications}/>}</AnimatePresence>
+                    <AnimatePresence>{isSettingsOpen && <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} theme={theme} setTheme={setTheme} customCategories={customCategories} setCustomCategories={useTaskStore.getState().setCustomCategories} allThemes={allThemes} onOpenThemeCreator={() => setIsThemeCreatorOpen(true)} shutdownTime={shutdownTime} onSetShutdownTime={setShutdownTime} soundEffectsEnabled={soundEffectsEnabled} onSetSoundEffectsEnabled={setSoundEffectsEnabled} onOpenArchive={() => setIsArchiveOpen(true)} autoArchiveEnabled={autoArchiveEnabled} onSetAutoArchiveEnabled={setAutoArchiveEnabled} onExport={handleExport} onTriggerImport={() => importInputRef.current?.click()} notificationsEnabled={notificationsEnabled} onSetNotificationsEnabled={setNotificationsEnabled}/>}</AnimatePresence>
                     <AnimatePresence>{isPlanting && <PlantingAnimation onComplete={finishPlanting} />}</AnimatePresence>
                     <AnimatePresence>{focusTask && <FocusView task={focusTask} onClose={() => setFocusTaskId(null)} onComplete={handleFocusComplete} onLogDistraction={logDistraction} />}</AnimatePresence>
-                    <AnimatePresence>{winModalTaskId && <WinModal task={tasks.find(t => t.id === winModalTaskId)} onSaveWin={saveWin} onClose={() => handleSkipWin(winModalTaskId)} />}</AnimatePresence>
+                    <AnimatePresence>{winModalTaskId && <WinModal task={tasks.find(t => t.id === winModalTaskId)} onSaveWin={(id, winText) => { setTasks(prev => prev.map(t => t.id === id ? { ...t, win: winText } : t)); setWinModalTaskId(null); }} onClose={() => setWinModalTaskId(null)} />}</AnimatePresence>
                     <AnimatePresence>{achievementToast && <AchievementToast achievement={achievementToast} onClose={() => setAchievementToast(null)} />}</AnimatePresence>
                     <AnimatePresence>{toastMessage && <GenericToast message={toastMessage} onClose={() => setToastMessage(null)} />}</AnimatePresence>
                     <div className="sr-only" aria-live="polite" aria-atomic="true">

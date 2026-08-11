@@ -273,6 +273,42 @@ function registerIPCHandlers() {
         }
     });
 
+    // Native Silent Backup to Documents/Aura_Backups
+    ipcMain.handle('fs:backupData', async (_, data) => {
+        try {
+            const backupsDir = path.join(os.homedir(), 'Documents', 'Aura_Backups');
+            if (!fs.existsSync(backupsDir)) {
+                fs.mkdirSync(backupsDir, { recursive: true });
+            }
+            const today = new Date().toISOString().split('T')[0];
+            const filePath = path.join(backupsDir, `aura-backup-${today}.json`);
+            fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf-8');
+            return { success: true, filePath };
+        } catch (err) {
+            console.error('Backup error:', err);
+            return { success: false, error: err.message };
+        }
+    });
+
+    // Native Restore Picker
+    ipcMain.handle('fs:restoreData', async () => {
+        try {
+            const result = await dialog.showOpenDialog(mainWindow, {
+                title: 'Select Aura Backup File',
+                defaultPath: path.join(os.homedir(), 'Documents', 'Aura_Backups'),
+                filters: [{ name: 'JSON Backups', extensions: ['json'] }],
+                properties: ['openFile']
+            });
+
+            if (result.canceled || result.filePaths.length === 0) return null;
+            const content = fs.readFileSync(result.filePaths[0], 'utf-8');
+            return JSON.parse(content);
+        } catch (err) {
+            console.error('Restore error:', err);
+            return null;
+        }
+    });
+
     // Startup control
     ipcMain.handle('startup:getEnabled', () => {
         return app.getLoginItemSettings().openAtLogin;

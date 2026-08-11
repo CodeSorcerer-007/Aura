@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import * as Tone from 'tone';
 import { getDBItem, setDBItem } from '../utils/db';
 import { achievementsList } from '../utils/helpers';
+import { performNativeBackup } from '../utils/electronBridge';
 
 export const useSettingsStore = create((set, get) => ({
     theme: 'dark',
@@ -191,17 +192,11 @@ export const useSettingsStore = create((set, get) => ({
     },
 
     performAutoBackup: async (allData) => {
-        const { backupDirectoryHandle } = get();
-        if (!backupDirectoryHandle) return;
-
         try {
-            const today = new Date().toISOString().split('T')[0];
-            const fileName = `aura-backup-${today}.json`;
-            const fileHandle = await backupDirectoryHandle.getFileHandle(fileName, { create: true });
-            const writable = await fileHandle.createWritable();
-            await writable.write(JSON.stringify(allData, null, 2));
-            await writable.close();
-            console.log(`Auto-backup saved successfully to ${fileName}`);
+            const res = await performNativeBackup(allData);
+            if (res && res.success) {
+                console.log(`Native auto-backup saved successfully to ${res.filePath}`);
+            }
         } catch (error) {
             console.error('Auto backup failed:', error);
         }

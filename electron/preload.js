@@ -15,6 +15,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
     getStartupEnabled: () => ipcRenderer.invoke('startup:getEnabled'),
     setStartupEnabled: (enabled) => ipcRenderer.send('startup:setEnabled', enabled),
 
+    // Backup & Restore
+    backupData: (data) => ipcRenderer.invoke('fs:backupData', data),
+    restoreData: () => ipcRenderer.invoke('fs:restoreData'),
+
     // Receive events from main process
     onAddTaskFromCapture: (callback) => {
         ipcRenderer.on('add-task-from-capture', (_, text) => callback(text));
