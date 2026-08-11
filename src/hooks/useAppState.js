@@ -1,6 +1,5 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import * as Tone from 'tone';
-import { usePreferences } from './usePreferences';
 import { setFile, deleteFile } from '../utils/db';
 import { 
     getLocalString, getTodayDateString, demoTasks, defaultCategories, 
@@ -295,15 +294,16 @@ export function useAppState() {
     const allThemes = useMemo(() => [...baseThemes, ...customThemes], [customThemes]);
 
     const handleFocusComplete = useCallback((taskId) => {
+        const taskText = useTaskStore.getState().tasks.find(t => t.id === taskId)?.text || '';
         toggleTask(taskId);
         setStats(s => ({...s, focusedTasksCompleted: s.focusedTasksCompleted + 1}));
         setTasks(prevTasks => prevTasks.map(t => 
             t.id === taskId ? {...t, focusSessions: (t.focusSessions || 0) + 1} : t
         ));
         showNotification("Focus session complete!", {
-            body: `Great work on: ${tasks.find(t => t.id === taskId)?.text}`,
+            body: `Great work on: ${taskText}`,
         });
-    }, [toggleTask, setStats, setTasks, showNotification, tasks]);
+    }, [toggleTask, setStats, setTasks, showNotification]);
 
     const handleExport = useCallback(() => {
         const data = { tasks, templates, stats, unlockedAchievements, theme, grove, customCategories, hasLaunched, journalEntries, customThemes, shutdownTime, soundEffectsEnabled, autoArchiveEnabled, notificationsEnabled };
@@ -330,17 +330,19 @@ export function useAppState() {
                 if (data.theme) setTheme(data.theme);
                 if (data.grove) setGrove(data.grove);
                 if (data.customCategories) setCustomCategories(data.customCategories);
-                if (data.hasLaunched) setHasLaunched(data.hasLaunched);
+                if (data.hasLaunched !== undefined) setHasLaunched(data.hasLaunched);
                 if (data.journalEntries) setJournalEntries(data.journalEntries);
                 if (data.customThemes) setCustomThemes(data.customThemes);
                 if (data.shutdownTime) setShutdownTime(data.shutdownTime);
-                if (data.soundEffectsEnabled) setSoundEffectsEnabled(data.soundEffectsEnabled);
-                if (data.autoArchiveEnabled) setAutoArchiveEnabled(data.autoArchiveEnabled);
-                if (data.notificationsEnabled) setNotificationsEnabled(data.notificationsEnabled);
+                if (data.soundEffectsEnabled !== undefined) setSoundEffectsEnabled(data.soundEffectsEnabled);
+                if (data.autoArchiveEnabled !== undefined) setAutoArchiveEnabled(data.autoArchiveEnabled);
+                if (data.notificationsEnabled !== undefined) setNotificationsEnabled(data.notificationsEnabled);
                 setToastMessage({ type: 'success', text: 'Data imported successfully!' });
             } catch (error) {
                 console.error("Error parsing import file:", error);
                 setToastMessage({ type: 'error', text: 'Failed to import data. Invalid file format.' });
+            } finally {
+                e.target.value = '';
             }
         };
         reader.readAsText(file);

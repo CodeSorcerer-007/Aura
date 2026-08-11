@@ -24,7 +24,7 @@ export const JournalView = ({ journalEntries, setJournalEntries, completedTasks 
         const existingIndex = journalEntries.findIndex(entry => entry.date === selectedDate);
         if (existingIndex > -1) {
             const newEntries = [...journalEntries];
-            newEntries[existingIndex] = { date: selectedDate, content: entryContent };
+            newEntries[existingIndex] = { ...newEntries[existingIndex], content: entryContent };
             setJournalEntries(newEntries);
         } else {
             setJournalEntries([...journalEntries, { date: selectedDate, content: entryContent }]);

@@ -131,6 +131,10 @@ export default function App() {
                 @keyframes soft-light { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
                 @keyframes wind-blow { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
                 @keyframes ember-glow { 0% { opacity: 0.2; transform: scale(1); } 50% { opacity: 0.4; transform: scale(1.1); } 100% { opacity: 0.2; transform: scale(1); } }
+                @keyframes bubble-rise { 0% { transform: translateY(0); opacity: 0; } 20% { opacity: 0.6; } 80% { opacity: 0.6; } 100% { transform: translateY(-100vh); opacity: 0; } }
+                @keyframes snow-fall { 0% { transform: translateY(0) translateX(0); } 50% { transform: translateY(50vh) translateX(10px); } 100% { transform: translateY(105vh) translateX(-10px); } }
+                @keyframes gear-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+                @keyframes glitch-anim { 0% { transform: translate(-48%, -52%); } 100% { transform: translate(-52%, -48%); } }
 
                 .theme-dark { --color-bg: #000000; --color-bg-secondary: #111827; --color-bg-secondary-hover: #1f2937; --color-bg-input: #11182780; --color-text-primary: #f9fafb; --color-text-secondary: #9ca3af; --color-border: #374151; --color-accent: #2dd4bf; }
                 .theme-light { --color-bg: #f9fafb; --color-bg-secondary: #ffffff; --color-bg-secondary-hover: #f3f4f6; --color-bg-input: #ffffff80; --color-text-primary: #1f2937; --color-text-secondary: #6b7280; --color-border: #d1d5db; --color-accent: #10b981; }
@@ -148,6 +152,7 @@ export default function App() {
                 .theme-rose_pine { --color-bg: #191724; --color-bg-secondary: #1f1d2e; --color-bg-secondary-hover: #26233a; --color-bg-input: #1f1d2e80; --color-text-primary: #e0def4; --color-text-secondary: #c4a7e7; --color-border: #eb6f92; --color-accent: #31748f; }
                 .theme-matcha { --color-bg: #243029; --color-bg-secondary: #354a3d; --color-bg-secondary-hover: #425c4d; --color-bg-input: #354a3d80; --color-text-primary: #d8d8d8; --color-text-secondary: #88b495; --color-border: #557e62; --color-accent: #73c088; }
                 .theme-latte { --color-bg: #eff1f5; --color-bg-secondary: #e6e9ef; --color-bg-secondary-hover: #dce0e8; --color-bg-input: #e6e9ef80; --color-text-primary: #4c4f69; --color-text-secondary: #fe640b; --color-border: #bcc0cc; --color-accent: #1e66f5; }
+                ${customThemes.map(t => `.theme-${t.id} { --color-bg: ${t.bg}; --color-bg-secondary: ${t.bgSecondary}; --color-bg-secondary-hover: ${t.bgSecondary}cc; --color-bg-input: ${t.bgSecondary}80; --color-text-primary: ${t.textPrimary}; --color-text-secondary: ${t.textSecondary}; --color-border: ${t.accent}40; --color-accent: ${t.accent}; }`).join('\n')}
 
                 .theme-bg-dark { animation: pulse-aura 8s infinite ease-in-out; }
                 .theme-bg-light { background: radial-gradient(circle, #ffffff 0%, #e5e7eb 100%); background-size: 200% 200%; animation: soft-light 25s infinite alternate; }

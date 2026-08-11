@@ -72,6 +72,14 @@ export const useTaskStore = create((set, get) => ({
         });
     },
 
+    setCustomCategories: (updater) => {
+        set((state) => {
+            const next = typeof updater === 'function' ? updater(state.customCategories) : updater;
+            setDBItem('aura-custom-categories', next);
+            return { customCategories: next };
+        });
+    },
+
     logDistraction: (distractionText) => {
         const today = new Date().toISOString().split('T')[0];
         set((state) => {
@@ -125,6 +133,7 @@ export const useTaskStore = create((set, get) => ({
 
         const newTask = {
             id: crypto.randomUUID(),
+            createdAt: Date.now(),
             text: finalText.replace(/  +/g, ' ').trim(),
             completed: false,
             priority,

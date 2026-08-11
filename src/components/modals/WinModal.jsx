@@ -2,11 +2,11 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useFocusTrap } from '../../hooks/useFocusTrap';
 
-export const WinModal = ({ isOpen, onClose, task, onSaveWin }) => {
+export const WinModal = ({ onClose, task, onSaveWin }) => {
     const [winText, setWinText] = useState('');
-    const trapRef = useFocusTrap(isOpen);
+    const trapRef = useFocusTrap(Boolean(task));
     
-    if (!isOpen || !task) return null;
+    if (!task) return null;
 
     const handleSave = () => {
         if (winText.trim()) {

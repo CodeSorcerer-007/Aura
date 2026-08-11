@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, Reorder } from 'framer-motion';
 import { SearchIcon, XIcon } from '../icons/Icons';
 import { TaskBubble } from '../layout/TaskBubble';
 import { useFocusTrap } from '../../hooks/useFocusTrap';
@@ -35,24 +35,26 @@ export const SearchModal = ({ isOpen, onClose, tasks, toggleTask, deleteTask, on
                         className="w-full bg-[var(--color-bg)] pl-10 pr-4 py-2 rounded-lg border border-[var(--color-border)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]"
                     />
                 </div>
-                <div className="space-y-3 max-h-96 overflow-y-auto">
+                <div className="max-h-96 overflow-y-auto">
                     {filteredTasks.length > 0 ? (
-                        filteredTasks.map(task => (
-                            <TaskBubble 
-                                key={task.id} 
-                                task={task} 
-                                onToggle={toggleTask} 
-                                onDelete={deleteTask} 
-                                onFocus={onFocus} 
-                                onReorder={onReorder} 
-                                onToggleSubtask={onToggleSubtask} 
-                                allCategories={allCategories} 
-                                isDependencyMet={true} 
-                                onOpenDetail={onOpenDetail} 
-                                onTogglePin={onTogglePin} 
-                                onArchive={onArchive}
-                            />
-                        ))
+                        <Reorder.Group axis="y" values={filteredTasks} onReorder={() => {}} className="space-y-3">
+                            {filteredTasks.map(task => (
+                                <TaskBubble 
+                                    key={task.id} 
+                                    task={task} 
+                                    onToggle={toggleTask} 
+                                    onDelete={deleteTask} 
+                                    onFocus={onFocus} 
+                                    onReorder={onReorder} 
+                                    onToggleSubtask={onToggleSubtask} 
+                                    allCategories={allCategories} 
+                                    isDependencyMet={true} 
+                                    onOpenDetail={onOpenDetail} 
+                                    onTogglePin={onTogglePin} 
+                                    onArchive={onArchive}
+                                />
+                            ))}
+                        </Reorder.Group>
                     ) : (
                         <p className="text-center text-[var(--color-text-secondary)] py-4">No tasks found matching your search.</p>
                     )}

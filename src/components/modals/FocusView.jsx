@@ -57,6 +57,9 @@ export const FocusView = ({ task, onClose, onComplete, onLogDistraction }) => {
         return () => { isMounted = false; };
     }, [isActive, soundType]);
 
+    const distractionsRef = useRef([]);
+    distractionsRef.current = distractionsThisSession;
+
     useEffect(() => { setTimeLeft(duration * 60); }, [duration]);
 
     useEffect(() => {
@@ -72,13 +75,13 @@ export const FocusView = ({ task, onClose, onComplete, onLogDistraction }) => {
                     completedRef.current = true;
                     setIsActive(false);
                     clearInterval(interval);
-                    onComplete(task.id, distractionsThisSession);
+                    onComplete(task.id, distractionsRef.current);
                     onClose();
                 }
             }, 500);
         }
         return () => { if (interval) clearInterval(interval); };
-    }, [isActive]);
+    }, [isActive, task.id, onComplete, onClose]);
 
     const handleLogDistraction = () => {
         const trimmed = distractionText.trim();

@@ -41,9 +41,12 @@ export const ReviewView = ({ tasks, achievements, allCategories, stats, onDelete
     }, [completedTasks]);
 
     const staleTasks = useMemo(() => {
-        const twoWeeksAgo = new Date();
-        twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
-        return tasks.filter(task => !task.completed && new Date(task.id) < twoWeeksAgo);
+        const twoWeeksAgo = Date.now() - 14 * 24 * 60 * 60 * 1000;
+        return tasks.filter(task => {
+            if (task.completed || task.isArchived) return false;
+            const created = task.createdAt || (typeof task.id === 'number' ? task.id : null);
+            return created ? created < twoWeeksAgo : false;
+        });
     }, [tasks]);
 
     const totalCompleted = completedTasks.length;
@@ -60,7 +63,12 @@ export const ReviewView = ({ tasks, achievements, allCategories, stats, onDelete
                     <h3 className="text-xl font-bold mb-4">Productivity Heatmap</h3>
                     <div className="flex flex-wrap gap-1">
                         {heatmapData.map(([date, data]) => (
-                            <div key={date} className={`w-3 h-3 rounded-sm ${data.level > 0 ? `opacity-${Math.min(data.level*25, 100)}` : 'bg-[var(--color-bg)]'} bg-[var(--color-accent)]`} title={`${data.level} tasks on ${formatDate(date)}`}></div>
+                            <div
+                                key={date}
+                                className={`w-3 h-3 rounded-sm ${data.level === 0 ? 'bg-[var(--color-bg)]' : 'bg-[var(--color-accent)]'}`}
+                                style={data.level > 0 ? { opacity: Math.min(data.level * 0.25, 1) } : {}}
+                                title={`${data.level} tasks on ${formatDate(date)}`}
+                            />
                         ))}
                     </div>
                 </div>
