@@ -120,7 +120,7 @@ The compiled installer will be available in the `dist` folder.
 | <kbd>N</kbd> | New task (focus capture bar in-app) |
 | <kbd>S</kbd> | Open settings |
 | <kbd>/</kbd> | Open command palette |
-| <kbd>1</kbd> - <kbd>5</kbd> | Switch between views |
+| <kbd>1</kbd> - <kbd>6</kbd> | Switch between views (Flow, Calendar, Projects, Grove, Journal, Review) |
 | <kbd>Escape</kbd> | Close any open modal |
 
 <br/>

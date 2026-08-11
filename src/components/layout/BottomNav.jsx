@@ -1,10 +1,11 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { SunIcon, SparklesIcon, LeafIcon, BookOpenIcon, BarChartIcon } from '../icons/Icons';
+import { SunIcon, SparklesIcon, LeafIcon, BookOpenIcon, BarChartIcon, CalendarIcon } from '../icons/Icons';
 
 export const BottomNav = ({ currentView, setCurrentView }) => {
     const navItems = [
         { id: 'flow', label: 'Flow', icon: <SunIcon /> },
+        { id: 'calendar', label: 'Calendar', icon: <CalendarIcon /> },
         { id: 'constellations', label: 'Projects', icon: <SparklesIcon /> },
         { id: 'grove', label: 'Grove', icon: <LeafIcon /> },
         { id: 'journal', label: 'Journal', icon: <BookOpenIcon /> },

@@ -13,6 +13,7 @@ import { LoadingScreen, AchievementToast, GenericToast } from './components/layo
 
 // Views
 import { FlowView } from './components/views/FlowView';
+import { CalendarView } from './components/views/CalendarView';
 import { ConstellationsView } from './components/views/ConstellationsView';
 import { GroveView, PlantingAnimation } from './components/views/GroveView';
 import { JournalView } from './components/views/JournalView';
@@ -89,6 +90,7 @@ export default function App() {
                         </AnimatePresence>
                         <AnimatePresence mode="wait">
                             {currentView === 'flow' && <FlowView key="flow" tasks={filteredTasks} toggleTask={toggleTask} deleteTask={deleteTask} onFocus={setFocusTaskId} activeFilter={activeFilter} setActiveFilter={setActiveFilter} updateTaskOrderAndSection={updateTaskOrderAndSection} onToggleSubtask={toggleSubtask} allTasks={tasks} allCategories={allCategories} onOpenDetail={(id) => setDetailModal({isOpen: true, taskId: id})} onTogglePin={togglePin} onArchive={archiveTask} />}
+                            {currentView === 'calendar' && <CalendarView key="calendar" tasks={tasks} toggleTask={toggleTask} onFocus={setFocusTaskId} onOpenDetail={(id) => setDetailModal({isOpen: true, taskId: id})} allCategories={allCategories} />}
                             {currentView === 'constellations' && <ConstellationsView key="constellations" tasks={tasks} toggleTask={toggleTask} onSaveTemplate={saveTemplate} templates={templates} allCategories={allCategories} />}
                             {currentView === 'grove' && <GroveView key="grove" tasks={tasks} grove={grove} goldenSeeds={stats.goldenSeeds} onPlantSeed={handlePlantSeed} allCategories={allCategories} />}
                             {currentView === 'journal' && <JournalView key="journal" journalEntries={journalEntries} setJournalEntries={setJournalEntries} completedTasks={tasks.filter(t => t.completed && !t.isArchived)} />}

@@ -374,10 +374,11 @@ export function useAppState() {
                 case 'n': e.preventDefault(); document.querySelector('input[placeholder*="Capture a thought"]')?.focus(); break;
                 case 's': e.preventDefault(); setIsSettingsOpen(true); break;
                 case '1': setCurrentView('flow'); break;
-                case '2': setCurrentView('constellations'); break;
-                case '3': setCurrentView('grove'); break;
-                case '4': setCurrentView('journal'); break;
-                case '5': setCurrentView('review'); break;
+                case '2': setCurrentView('calendar'); break;
+                case '3': setCurrentView('constellations'); break;
+                case '4': setCurrentView('grove'); break;
+                case '5': setCurrentView('journal'); break;
+                case '6': setCurrentView('review'); break;
                 default: break;
             }
         };
