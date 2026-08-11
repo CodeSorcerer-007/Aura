@@ -1,3 +1,6 @@
+import React, { useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+
 import { useAppLogic } from './hooks/useAppLogic';
 import { useUIStore } from './store/useUIStore';
 import { useSettingsStore } from './store/useSettingsStore';
