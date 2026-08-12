@@ -40,7 +40,7 @@ export function useDashboardMetrics() {
         if (activeFilter.type === 'all') return nonArchived;
         if (activeFilter.type === 'priority') return nonArchived.filter(t => t.priority === 3);
         if (activeFilter.type === 'category') return nonArchived.filter(t => t.category === activeFilter.value);
-        if (activeFilter.type === 'tag') return nonArchived.filter(t => (t.tags || []).includes(activeFilter.value));
+        if (activeFilter.type === 'tag') return nonArchived.filter(t => (t.tags || []).includes(String(activeFilter.value)));
         if (activeFilter.type === 'due_this_week') {
             const today = new Date();
             const endOfWeek = new Date();

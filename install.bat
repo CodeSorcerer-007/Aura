@@ -24,10 +24,7 @@ if %ERRORLEVEL% NEQ 0 (
 )
 
 echo.
-echo [3/3] Launching Aura App...
-echo Opening http://localhost:4173 in your default browser...
-start http://localhost:4173
-echo.
-echo Press Ctrl+C in this window to stop the server when done.
-call npx serve dist -p 4173
+echo [3/3] Launching Aura Native Desktop App...
+call npm run electron:dev
 pause
+

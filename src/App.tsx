@@ -198,8 +198,17 @@ export default function App() {
                         </Suspense>
                     </main>
 
-                    <CaptureInput onAddTask={addTask} />
-                    <BottomNav currentView={currentView} setCurrentView={setCurrentView} />
+                    <motion.div 
+                        initial={{ y: 100 }} 
+                        animate={{ y: 0 }} 
+                        transition={{ type: 'spring', stiffness: 100 }} 
+                        className="fixed bottom-0 left-0 right-0 z-20 pointer-events-none pt-6 px-4 pb-[calc(1rem+env(safe-area-inset-bottom))] bg-gradient-to-t from-[var(--color-bg)] via-[var(--color-bg)]/90 to-transparent"
+                    >
+                        <div className="max-w-2xl mx-auto flex flex-col items-center gap-3">
+                            <BottomNav currentView={currentView} setCurrentView={setCurrentView} />
+                            <CaptureInput onAddTask={addTask} />
+                        </div>
+                    </motion.div>
                     <ModalContainer commands={commands} />
                 </motion.div>
             )}
