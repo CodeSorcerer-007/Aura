@@ -46,6 +46,7 @@ export interface UIState {
     isCommandPaletteOpen: boolean;
     isMorningRitualOpen: boolean;
     isQuickCaptureOpen: boolean;
+    isPluginsOpen: boolean;
     detailModal: DetailModalState;
     shutdownRitual: ShutdownRitualState;
 
@@ -71,12 +72,13 @@ export interface UIState {
     setIsCommandPaletteOpen: (open: boolean) => void;
     setIsMorningRitualOpen: (open: boolean) => void;
     setIsQuickCaptureOpen: (open: boolean) => void;
+    setIsPluginsOpen: (open: boolean) => void;
     setDetailModal: (modal: DetailModalState) => void;
     setShutdownRitual: (ritual: ShutdownRitualState | boolean | ((prev: ShutdownRitualState) => ShutdownRitualState)) => void;
 }
 
 export const useUIStore = create<UIState>((set) => ({
-    currentView: 'flow',
+    currentView: 'workspace',
     activeFilter: { type: 'all', value: null },
     toastMessage: null,
     achievementToast: null,
@@ -98,6 +100,7 @@ export const useUIStore = create<UIState>((set) => ({
     isCommandPaletteOpen: false,
     isMorningRitualOpen: false,
     isQuickCaptureOpen: false,
+    isPluginsOpen: false,
     detailModal: { isOpen: false, taskId: null },
     shutdownRitual: { active: false, step: 0 },
 
@@ -132,6 +135,7 @@ export const useUIStore = create<UIState>((set) => ({
     setIsCommandPaletteOpen: (open) => set({ isCommandPaletteOpen: open }),
     setIsMorningRitualOpen: (open) => set({ isMorningRitualOpen: open }),
     setIsQuickCaptureOpen: (open) => set({ isQuickCaptureOpen: open }),
+    setIsPluginsOpen: (open) => set({ isPluginsOpen: open }),
     setDetailModal: (modal) => set({ detailModal: modal }),
     setShutdownRitual: (activeOrStateOrFn) => set((state) => {
         let next: ShutdownRitualState;

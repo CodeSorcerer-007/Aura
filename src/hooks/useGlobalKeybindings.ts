@@ -50,6 +50,7 @@ export function useGlobalKeybindings() {
                 else if (focusTaskId) setFocusTaskId(null);
                 else if (isMindfulMinuteOpen) setIsMindfulMinuteOpen(false);
                 else if (isThemeCreatorOpen) setIsThemeCreatorOpen(false);
+                else if (useUIStore.getState().isPluginsOpen) useUIStore.getState().setIsPluginsOpen(false);
             }
 
             if (isInputFocused) return;
@@ -71,12 +72,13 @@ export function useGlobalKeybindings() {
                     e.preventDefault();
                     setIsShortcutsOpen(!isShortcutsOpen);
                     break;
-                case '1': setCurrentView('flow'); break;
-                case '2': setCurrentView('calendar'); break;
-                case '3': setCurrentView('constellations'); break;
-                case '4': setCurrentView('grove'); break;
-                case '5': setCurrentView('journal'); break;
-                case '6': setCurrentView('review'); break;
+                case '1': setCurrentView('workspace'); break;
+                case '2': setCurrentView('flow'); break;
+                case '3': setCurrentView('calendar'); break;
+                case '4': setCurrentView('constellations'); break;
+                case '5': setCurrentView('grove'); break;
+                case '6': setCurrentView('journal'); break;
+                case '7': setCurrentView('review'); break;
                 default: break;
             }
         };

@@ -20,7 +20,8 @@ export const ReviewView: React.FC<ReviewViewProps> = ({ tasks, achievements, all
         for (let i = 0; i < 365; i++) {
             const date = new Date();
             date.setDate(date.getDate() - i);
-            data.set(getLocalString(date), { level: 0 });
+            const dateKey = getLocalString(date);
+            if (dateKey) data.set(dateKey, { level: 0 });
         }
         completedTasks.forEach(task => {
             const date = task.completionDate!;
@@ -37,7 +38,7 @@ export const ReviewView: React.FC<ReviewViewProps> = ({ tasks, achievements, all
         for (let i = 13; i >= 0; i--) {
             const d = new Date();
             d.setDate(d.getDate() - i);
-            const dateStr = getLocalString(d);
+            const dateStr = getLocalString(d) || '';
             const count = completedTasks.filter(t => t.completionDate === dateStr).length;
             if (count > maxCount) maxCount = count;
             trend.push({ date: dateStr, count });
@@ -46,8 +47,10 @@ export const ReviewView: React.FC<ReviewViewProps> = ({ tasks, achievements, all
     }, [completedTasks]);
 
     const recentHistory = useMemo(() => {
-        return [...completedTasks].sort((a,b) => {
-            return b.id.toString().localeCompare(a.id.toString());
+        return [...completedTasks].sort((a, b) => {
+            const timeA = a.createdAt || (a.completionDate ? new Date(a.completionDate).getTime() : 0);
+            const timeB = b.createdAt || (b.completionDate ? new Date(b.completionDate).getTime() : 0);
+            return timeB - timeA;
         }).slice(0, 5);
     }, [completedTasks]);
     
@@ -67,6 +70,10 @@ export const ReviewView: React.FC<ReviewViewProps> = ({ tasks, achievements, all
             return acc;
         }, {});
         return Object.entries(data).sort((a,b) => b[1] - a[1]);
+    }, [completedTasks]);
+
+    const totalTagCount = useMemo(() => {
+        return completedTasks.flatMap(t => t.tags || []).length;
     }, [completedTasks]);
 
     const staleTasks = useMemo(() => {
@@ -96,7 +103,7 @@ export const ReviewView: React.FC<ReviewViewProps> = ({ tasks, achievements, all
                                 key={date}
                                 className={`w-3 h-3 rounded-sm ${data.level === 0 ? 'bg-[var(--color-bg)]' : 'bg-[var(--color-accent)]'}`}
                                 style={data.level > 0 ? { opacity: Math.min(data.level * 0.25, 1) } : {}}
-                                title={`${data.level} tasks on ${formatDate(date)}`}
+                                title={`${data.level} tasks on ${formatDate(date) || date}`}
                             />
                         ))}
                     </div>
@@ -124,7 +131,7 @@ export const ReviewView: React.FC<ReviewViewProps> = ({ tasks, achievements, all
                                 <div className="w-full bg-[var(--color-bg)] rounded-full h-2">
                                     <div 
                                         className={`${allCategories[category]?.solid || defaultCategories['General'].solid} h-2 rounded-full`}
-                                        style={{ width: `${(count / totalCompleted) * 100}%`}}
+                                        style={{ width: `${totalCompleted > 0 ? (count / totalCompleted) * 100 : 0}%`}}
                                     />
                                 </div>
                             </div>
@@ -143,7 +150,7 @@ export const ReviewView: React.FC<ReviewViewProps> = ({ tasks, achievements, all
                                 <div className="w-full bg-[var(--color-bg)] rounded-full h-2">
                                     <div 
                                         className="bg-purple-400 h-2 rounded-full"
-                                        style={{ width: `${(count / completedTasks.flatMap(t => t.tags || []).length) * 100}%`}}
+                                        style={{ width: `${totalTagCount > 0 ? (count / totalTagCount) * 100 : 0}%`}}
                                     />
                                 </div>
                             </div>
@@ -173,6 +180,7 @@ export const ReviewView: React.FC<ReviewViewProps> = ({ tasks, achievements, all
                     <div className="h-40 flex items-end justify-between relative mt-8">
                         {trendData.trend.map((d) => {
                             const height = trendData.maxCount === 0 ? 0 : (d.count / trendData.maxCount) * 100;
+                            const formattedDate = formatDate(d.date) || d.date;
                             return (
                                 <div key={d.date} className="w-full mx-1 flex flex-col justify-end items-center group relative h-full">
                                     <div 
@@ -180,7 +188,7 @@ export const ReviewView: React.FC<ReviewViewProps> = ({ tasks, achievements, all
                                         style={{ height: `${height}%`, minHeight: d.count > 0 ? '4px' : '0' }}
                                     ></div>
                                     <div className="absolute -top-8 bg-[var(--color-bg)] text-xs py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 border border-[var(--color-border)] whitespace-nowrap">
-                                        {d.count} tasks<br/><span className="text-[10px] text-gray-400">{formatDate(d.date).split(',')[0]}</span>
+                                        {d.count} tasks<br/><span className="text-[10px] text-gray-400">{formattedDate ? formattedDate.split(',')[0] : ''}</span>
                                     </div>
                                 </div>
                             );
@@ -196,7 +204,7 @@ export const ReviewView: React.FC<ReviewViewProps> = ({ tasks, achievements, all
                             <div key={t.id} className="relative pl-4">
                                 <div className="absolute -left-[22px] top-1.5 w-3 h-3 bg-[var(--color-accent)] rounded-full border-2 border-[var(--color-bg-secondary)]"></div>
                                 <p className="text-sm font-semibold">{t.text}</p>
-                                <p className="text-xs text-[var(--color-text-secondary)]">{t.completionDate ? formatDate(t.completionDate) : ''}</p>
+                                <p className="text-xs text-[var(--color-text-secondary)]">{t.completionDate ? (formatDate(t.completionDate) || t.completionDate) : ''}</p>
                             </div>
                         ))}
                         {recentHistory.length === 0 && <p className="text-[var(--color-text-secondary)] text-sm italic">No completed tasks yet.</p>}

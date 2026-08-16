@@ -10,6 +10,9 @@ import { useAssistantMessages } from './useAssistantMessages';
 import { useMorningRitual } from './useMorningRitual';
 import { useGlobalKeybindings } from './useGlobalKeybindings';
 
+import { useWidgetStore } from '../store/useWidgetStore';
+import { pluginRegistry } from '../plugins/pluginRegistry';
+
 /**
  * Top-level headless orchestrator for the app.
  * This hook composes focused sub-hooks instead of doing everything itself,
@@ -43,7 +46,12 @@ export function useAppLogic() {
     // ── Initial Load ──────────────────────────────────────────────────────────
     useEffect(() => {
         if (!initialLoadDone) {
-            Promise.all([loadInitialData(), loadSettings()]).then(() => {
+            Promise.all([
+                loadInitialData(),
+                loadSettings(),
+                useWidgetStore.getState().loadInitialData(),
+                pluginRegistry.init(),
+            ]).then(() => {
                 setInitialLoadDone(true);
             });
         }

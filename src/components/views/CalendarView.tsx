@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CalendarIcon, CheckIcon, ZapIcon, StarIcon } from '../icons/Icons';
+import { getLocalString, getTodayDateString } from '../../utils/helpers';
 import { Task, CategoryStyle } from '../../types';
 
 interface CalendarViewProps {
@@ -35,7 +36,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ tasks, toggleTask, o
             if (task.deadline) {
                 dateKey = task.deadline.split('T')[0];
             } else if (task.createdAt) {
-                dateKey = new Date(task.createdAt).toISOString().split('T')[0];
+                dateKey = getLocalString(task.createdAt);
             }
             if (dateKey) {
                 if (!map[dateKey]) map[dateKey] = [];
@@ -57,7 +58,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ tasks, toggleTask, o
         setCurrentDate(new Date());
     };
 
-    const todayStr = new Date().toISOString().split('T')[0];
+    const todayStr = getTodayDateString() || new Date().toISOString().split('T')[0];
 
     const daysGrid = useMemo(() => {
         const grid: Array<{ day: number; dateStr: string } | null> = [];

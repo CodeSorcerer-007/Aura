@@ -80,8 +80,11 @@ export function useDataSync() {
     const handleImport = async (e: React.ChangeEvent<HTMLInputElement> | null) => {
         if (isElectron()) {
             const result = await performNativeRestore();
-            if (result && !result.canceled && result.data) {
-                applyImportedData(result.data);
+            if (result && !result.canceled) {
+                const dataToApply = result.data || result;
+                if (dataToApply && typeof dataToApply === 'object' && (dataToApply.tasks || dataToApply.stats || dataToApply.theme)) {
+                    applyImportedData(dataToApply);
+                }
             }
             return;
         }

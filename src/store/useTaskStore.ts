@@ -31,7 +31,7 @@ export interface TaskState {
     deleteAttachmentFromTask: (taskId: string, attachment: Attachment) => Promise<void>;
     toggleSubtask: (taskId: string, subtaskIndex: number) => void;
     updateTaskOrderAndSection: (newOrder: Task[], section?: string) => void;
-    saveTemplate: (templateName: string) => void;
+    saveTemplate: (templateName: string, tasksToInclude?: Task[]) => void;
 }
 
 export const useTaskStore = create<TaskState>((set, get) => ({
@@ -109,7 +109,7 @@ export const useTaskStore = create<TaskState>((set, get) => ({
     },
 
     logDistraction: (distractionText) => {
-        const today = new Date().toISOString().split('T')[0];
+        const today = getTodayDateString() || new Date().toISOString().split('T')[0];
         set((state) => {
             const existing = state.journalEntries.find(e => e.date === today);
             let nextJournal: JournalEntry[];
@@ -395,9 +395,10 @@ export const useTaskStore = create<TaskState>((set, get) => ({
         });
     },
 
-    saveTemplate: (templateName) => {
+    saveTemplate: (templateName, tasksToInclude) => {
         set((state) => {
-            const tasksToSave = state.tasks.filter(t => !t.completed && !t.isArchived);
+            const rawTasks = tasksToInclude || state.tasks.filter(t => !t.completed && !t.isArchived && (!templateName || t.category === templateName));
+            const tasksToSave = rawTasks.length > 0 ? rawTasks : state.tasks.filter(t => !t.completed && !t.isArchived);
             if (tasksToSave.length === 0) return state;
 
             const templateTasks = tasksToSave.map(t => ({

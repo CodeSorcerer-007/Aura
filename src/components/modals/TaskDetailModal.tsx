@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { XIcon, LinkIcon } from '../icons/Icons';
 import { getFile } from '../../utils/db';
 import { useFocusTrap } from '../../hooks/useFocusTrap';
+import { useVoiceRecorder } from '../../hooks/useVoiceRecorder';
+import { VoiceVisualizer, AudioMemoPlayer } from '../common/VoiceVisualizer';
 import {
     isElectron, pickAndAttachFiles, openAttachment,
     deleteAttachmentFromDisk, formatFileSize, getFileIcon
@@ -31,6 +33,37 @@ export const TaskDetailModal: React.FC<TaskDetailModalProps> = ({ isOpen, onClos
     const fileInputRef = useRef<HTMLInputElement>(null);
     const trapRef = useFocusTrap(isOpen);
 
+    const {
+        isRecording,
+        interimTranscript,
+        duration,
+        volumeLevel,
+        startRecording,
+        stopRecording,
+        cancelRecording,
+    } = useVoiceRecorder({
+        onFinalResult: (result) => {
+            if (!task) return;
+            const newAttId = 'voice-' + Date.now();
+            const voiceAtt: TaskAttachment = {
+                id: newAttId,
+                name: `Voice Note (${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })})`,
+                type: 'audio',
+                audioUrl: result.audioUrl || undefined,
+                audioDuration: result.duration,
+            };
+
+            onAddAttachment(task.id, voiceAtt, false);
+
+            if (result.transcript.trim()) {
+                setNotes(prev => {
+                    const addition = `[Voice Note]: "${result.transcript.trim()}"`;
+                    return prev ? `${prev}\n\n${addition}` : addition;
+                });
+            }
+        },
+    });
+
     useEffect(() => {
         let isMounted = true;
         let localUrls: Record<string, string> = {};
@@ -42,61 +75,70 @@ export const TaskDetailModal: React.FC<TaskDetailModalProps> = ({ isOpen, onClos
 
             if (!isElectron()) {
                 const attachmentPromises = (task.attachments || []).map(async (att) => {
+                    if (att.audioUrl) return;
                     const fileBlob = await getFile(att.id);
                     if (fileBlob && isMounted) {
-                        localUrls[att.id] = URL.createObjectURL(fileBlob);
+                        const url = URL.createObjectURL(fileBlob);
+                        localUrls[att.id] = url;
                     }
                 });
+
                 Promise.all(attachmentPromises).then(() => {
                     if (isMounted) setAttachmentURLs(localUrls);
                 });
             }
-
-            return () => {
-                isMounted = false;
-                Object.values(localUrls).forEach(url => URL.revokeObjectURL(url));
-            };
         }
+
+        return () => {
+            isMounted = false;
+            Object.values(localUrls).forEach(url => URL.revokeObjectURL(url));
+        };
     }, [task]);
 
     if (!isOpen || !task) return null;
 
     const handleSave = () => {
-        const parsedTags = tags.split(',').map(t => t.trim()).filter(Boolean);
-        const mins = parseInt(estimatedMinutes, 10);
-        onSave(task.id, text, notes, parsedTags, isNaN(mins) ? null : mins);
+        const estNum = estimatedMinutes.trim() ? parseInt(estimatedMinutes, 10) : null;
+        onSave(task.id, text, notes, tags.split(',').map(t => t.trim()).filter(Boolean), isNaN(estNum as any) ? null : estNum);
         onClose();
-    };
-
-    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const files = e.target.files;
-        if (files && files[0]) {
-            await onAddAttachment(task.id, files[0]);
-        }
     };
 
     const handleNativeAttach = async () => {
         setIsAttaching(true);
         try {
-            const attachments = await pickAndAttachFiles(task.id);
-            if (attachments && attachments.length > 0) {
-                for (const att of attachments) {
-                    await onAddAttachment(task.id, att, true);
-                }
+            const files = await pickAndAttachFiles();
+            for (const f of files) {
+                onAddAttachment(task.id, f, true);
             }
+        } catch (e) {
+            console.error('Failed to attach files natively:', e);
         } finally {
             setIsAttaching(false);
         }
     };
 
-    const handleDeleteAttachment = async (att: TaskAttachment) => {
-        await deleteAttachmentFromDisk(att);
-        await onDeleteAttachment(task.id, att);
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = e.target.files;
+        if (files) {
+            for (let i = 0; i < files.length; i++) {
+                onAddAttachment(task.id, files[i]);
+            }
+        }
+        if (fileInputRef.current) fileInputRef.current.value = '';
     };
 
-    const handleOpenAttachment = async (att: TaskAttachment) => {
+    const handleDeleteAttachment = async (att: TaskAttachment) => {
         if (isElectron() && att.path) {
-            await openAttachment(att);
+            await deleteAttachmentFromDisk(att.path);
+        }
+        onDeleteAttachment(task.id, att);
+    };
+
+    const handleOpenAttachment = (att: TaskAttachment) => {
+        if (isElectron() && att.path) {
+            openAttachment(att.path);
+        } else if (att.audioUrl) {
+            // Audio attachment handled inline
         } else if (attachmentURLs[att.id]) {
             const a = document.createElement('a');
             a.href = attachmentURLs[att.id];
@@ -163,13 +205,16 @@ export const TaskDetailModal: React.FC<TaskDetailModalProps> = ({ isOpen, onClos
                     </div>
 
                     <div>
-                        <label className="block text-sm font-semibold mb-1">Notes</label>
+                        <div className="flex items-center justify-between mb-1">
+                            <label className="text-sm font-semibold">Notes</label>
+                            <span className="text-[11px] text-[var(--color-text-secondary)]">Speech notes auto-transcribed</span>
+                        </div>
                         <textarea
                             value={notes}
                             onChange={(e) => setNotes(e.target.value)}
                             rows={4}
                             placeholder="Add extra context, links, or sub-goals..."
-                            className="w-full bg-[var(--color-bg)] p-2 rounded-lg border border-[var(--color-border)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]"
+                            className="w-full bg-[var(--color-bg)] p-2 rounded-lg border border-[var(--color-border)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)] text-sm"
                         />
                     </div>
 
@@ -199,8 +244,37 @@ export const TaskDetailModal: React.FC<TaskDetailModalProps> = ({ isOpen, onClos
                         )}
                     </div>
 
+                    {/* Attachments & Voice Notes */}
                     <div>
-                        <label className="block text-sm font-semibold mb-2">📎 Attachments</label>
+                        <div className="flex items-center justify-between mb-2">
+                            <label className="text-sm font-semibold">📎 Attachments & Voice Notes</label>
+                            <button
+                                type="button"
+                                onClick={() => isRecording ? stopRecording() : startRecording()}
+                                className={`text-xs px-2.5 py-1 rounded-lg font-semibold flex items-center gap-1.5 transition-all ${
+                                    isRecording
+                                        ? 'bg-red-500 text-white animate-pulse'
+                                        : 'bg-teal-500/20 text-teal-300 border border-teal-500/30 hover:bg-teal-500/30'
+                                }`}
+                            >
+                                <span>🎙️</span>
+                                <span>{isRecording ? 'Stop Recording' : 'Record Voice Note'}</span>
+                            </button>
+                        </div>
+
+                        {/* Live voice recording feedback inside modal */}
+                        <AnimatePresence>
+                            {isRecording && (
+                                <VoiceVisualizer
+                                    isRecording={isRecording}
+                                    volumeLevel={volumeLevel}
+                                    duration={duration}
+                                    interimTranscript={interimTranscript}
+                                    onStop={() => stopRecording()}
+                                    onCancel={cancelRecording}
+                                />
+                            )}
+                        </AnimatePresence>
 
                         {isElectron() ? (
                             <button
@@ -222,44 +296,59 @@ export const TaskDetailModal: React.FC<TaskDetailModalProps> = ({ isOpen, onClos
                             </>
                         )}
 
-                        <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+                        <div className="space-y-2 max-h-52 overflow-y-auto pr-1">
                             <AnimatePresence>
-                                {(task.attachments || []).map(att => (
-                                    <motion.div
-                                        key={att.id}
-                                        initial={{ opacity: 0, y: -6 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        exit={{ opacity: 0, x: -10 }}
-                                        className="flex items-center gap-3 bg-[var(--color-bg)] p-2.5 rounded-xl border border-[var(--color-border)] group"
-                                    >
-                                        <span className="text-xl flex-shrink-0">{getFileIcon(att.name)}</span>
-                                        <div className="flex-grow min-w-0">
-                                            <p className="text-sm font-medium truncate">{att.name}</p>
-                                            {att.size && (
-                                                <p className="text-xs text-[var(--color-text-secondary)]">{formatFileSize(att.size)}</p>
-                                            )}
-                                        </div>
-                                        <div className="flex items-center gap-1 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <button
-                                                onClick={() => handleOpenAttachment(att)}
-                                                className="text-xs px-2 py-1 rounded-lg bg-[var(--color-accent)]/20 text-[var(--color-accent)] hover:bg-[var(--color-accent)]/40 transition-colors"
-                                                title="Open file"
-                                            >
-                                                Open
-                                            </button>
-                                            <button
-                                                onClick={() => handleDeleteAttachment(att)}
-                                                className="p-1 rounded-lg text-rose-400 hover:bg-rose-400/10 transition-colors"
-                                                title="Remove attachment"
-                                            >
-                                                <XIcon className="w-4 h-4"/>
-                                            </button>
-                                        </div>
-                                    </motion.div>
-                                ))}
+                                {(task.attachments || []).map(att => {
+                                    if (att.type === 'audio' || att.audioUrl) {
+                                        return (
+                                            <div key={att.id}>
+                                                <AudioMemoPlayer
+                                                    src={att.audioUrl || attachmentURLs[att.id] || ''}
+                                                    duration={att.audioDuration}
+                                                    title={att.name}
+                                                    onDelete={() => handleDeleteAttachment(att)}
+                                                />
+                                            </div>
+                                        );
+                                    }
+
+                                    return (
+                                        <motion.div
+                                            key={att.id}
+                                            initial={{ opacity: 0, y: -6 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            exit={{ opacity: 0, x: -10 }}
+                                            className="flex items-center gap-3 bg-[var(--color-bg)] p-2.5 rounded-xl border border-[var(--color-border)] group"
+                                        >
+                                            <span className="text-xl flex-shrink-0">{getFileIcon(att.name)}</span>
+                                            <div className="flex-grow min-w-0">
+                                                <p className="text-sm font-medium truncate">{att.name}</p>
+                                                {att.size && (
+                                                    <p className="text-xs text-[var(--color-text-secondary)]">{formatFileSize(att.size)}</p>
+                                                )}
+                                            </div>
+                                            <div className="flex items-center gap-1 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <button
+                                                    onClick={() => handleOpenAttachment(att)}
+                                                    className="text-xs px-2 py-1 rounded-lg bg-[var(--color-accent)]/20 text-[var(--color-accent)] hover:bg-[var(--color-accent)]/40 transition-colors"
+                                                    title="Open file"
+                                                >
+                                                    Open
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDeleteAttachment(att)}
+                                                    className="p-1 rounded-lg text-rose-400 hover:bg-rose-400/10 transition-colors"
+                                                    title="Remove attachment"
+                                                >
+                                                    <XIcon className="w-4 h-4"/>
+                                                </button>
+                                            </div>
+                                        </motion.div>
+                                    );
+                                })}
                             </AnimatePresence>
-                            {(task.attachments || []).length === 0 && (
-                                <p className="text-xs text-[var(--color-text-secondary)] text-center py-2">No files attached yet</p>
+                            {(task.attachments || []).length === 0 && !isRecording && (
+                                <p className="text-xs text-[var(--color-text-secondary)] text-center py-2">No files or voice notes attached yet</p>
                             )}
                         </div>
                     </div>
@@ -294,38 +383,59 @@ interface DependencySelectorModalProps {
     onClose: () => void;
     currentTask: Task;
     allTasks: Task[];
-    onSelect: (depId: string) => void;
+    onSelect: (id: string | null) => void;
 }
 
-const DependencySelectorModal: React.FC<DependencySelectorModalProps> = ({ isOpen, onClose, currentTask, allTasks, onSelect }) => {
-    const [search, setSearch] = useState('');
-    const eligibleTasks = allTasks.filter(t => t.id !== currentTask.id && !t.completed);
-    const filtered = eligibleTasks.filter(t => t.text.toLowerCase().includes(search.toLowerCase()));
-
+const DependencySelectorModal: React.FC<DependencySelectorModalProps> = ({
+    isOpen,
+    onClose,
+    currentTask,
+    allTasks,
+    onSelect
+}) => {
     if (!isOpen) return null;
 
+    const availableTasks = allTasks.filter(t => t.id !== currentTask.id && !t.completed);
+
     return (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/60 z-[60] flex items-center justify-center p-4" style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}>
-            <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} className="w-full max-w-sm bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-2xl p-4">
-                <h3 className="text-lg font-bold mb-3">Select Dependency</h3>
-                <input
-                    type="text"
-                    value={search}
-                    onChange={e => setSearch(e.target.value)}
-                    placeholder="Search tasks..."
-                    autoFocus
-                    className="w-full bg-[var(--color-bg)] p-2 rounded-lg border border-[var(--color-border)] mb-3"
-                />
-                <div className="space-y-1 max-h-48 overflow-y-auto">
-                    {filtered.map(t => (
-                        <button key={t.id} onClick={() => onSelect(t.id)} className="w-full text-left p-2 rounded-lg hover:bg-[var(--color-bg-secondary-hover)] text-sm">
-                            {t.text}
-                        </button>
-                    ))}
-                    {filtered.length === 0 && <p className="text-center text-sm text-[var(--color-text-secondary)] py-4">No matching tasks</p>}
+        <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
+        >
+            <div className="w-full max-w-md bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-xl p-4 shadow-xl">
+                <h3 className="font-bold mb-3">Select Dependency</h3>
+                <div className="max-h-60 overflow-y-auto space-y-2 mb-4">
+                    {availableTasks.length === 0 ? (
+                        <p className="text-sm text-[var(--color-text-secondary)]">No available tasks to depend on.</p>
+                    ) : (
+                        availableTasks.map(t => (
+                            <button
+                                key={t.id}
+                                onClick={() => onSelect(t.id)}
+                                className="w-full text-left p-2 rounded-lg bg-[var(--color-bg)] hover:bg-[var(--color-bg-secondary-hover)] text-sm truncate"
+                            >
+                                {t.text}
+                            </button>
+                        ))
+                    )}
                 </div>
-                <button onClick={onClose} className="mt-3 w-full text-sm text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]">Cancel</button>
-            </motion.div>
+                <div className="flex justify-between">
+                    <button
+                        onClick={() => onSelect(null)}
+                        className="text-xs text-rose-400 hover:underline"
+                    >
+                        Clear Dependency
+                    </button>
+                    <button
+                        onClick={onClose}
+                        className="px-3 py-1 rounded-lg bg-[var(--color-bg-secondary-hover)] text-xs"
+                    >
+                        Close
+                    </button>
+                </div>
+            </div>
         </motion.div>
     );
 };

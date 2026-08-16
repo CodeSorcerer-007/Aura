@@ -25,6 +25,7 @@ const WinModal = React.lazy(() => import('../modals/WinModal').then(m => ({ defa
 const MorningRitualModal = React.lazy(() => import('../modals/MorningRitualModal').then(m => ({ default: m.MorningRitualModal })));
 const QuickCaptureOverlay = React.lazy(() => import('../modals/QuickCaptureOverlay').then(m => ({ default: m.QuickCaptureOverlay })));
 const ShortcutsModal = React.lazy(() => import('../modals/ShortcutsModal').then(m => ({ default: m.ShortcutsModal })));
+const PluginsModal = React.lazy(() => import('../modals/PluginsModal').then(m => ({ default: m.PluginsModal })));
 const PlantingAnimation = React.lazy(() => import('../views/GroveView').then(m => ({ default: m.PlantingAnimation })));
 
 // Toast components are lightweight layout components
@@ -53,11 +54,11 @@ export const ModalContainer: React.FC<ModalContainerProps> = ({ commands }) => {
         setTasks,
     } = useTaskActions();
 
-    const { allCategories, allThemes, dailyStats } = useDashboardMetrics();
+    const { dailyStats, allCategories, allThemes } = useDashboardMetrics();
     const { handleExport, handleImport } = useDataSync();
     const { finishPlanting, handleFocusComplete, handleSetMITs } = useGamificationActions();
 
-    // Task Store state
+    // Task Store
     const tasks = useTaskStore(s => s.tasks);
     const customCategories = useTaskStore(s => s.customCategories);
     const setCustomCategories = useTaskStore(s => s.setCustomCategories);
@@ -65,10 +66,7 @@ export const ModalContainer: React.FC<ModalContainerProps> = ({ commands }) => {
     // Settings Store
     const theme = useSettingsStore(s => s.theme);
     const setTheme = useSettingsStore(s => s.setTheme);
-    const shutdownTime = useSettingsStore(s => s.shutdownTime);
-    const setShutdownTime = useSettingsStore(s => s.setShutdownTime);
-    const morningTime = useSettingsStore(s => s.morningTime);
-    const setMorningTime = useSettingsStore(s => s.setMorningTime);
+    const customThemes = useSettingsStore(s => s.customThemes);
     const soundEffectsEnabled = useSettingsStore(s => s.soundEffectsEnabled);
     const setSoundEffectsEnabled = useSettingsStore(s => s.setSoundEffectsEnabled);
     const autoArchiveEnabled = useSettingsStore(s => s.autoArchiveEnabled);
@@ -77,6 +75,10 @@ export const ModalContainer: React.FC<ModalContainerProps> = ({ commands }) => {
     const setNotificationsEnabled = useSettingsStore(s => s.setNotificationsEnabled);
     const autoStartEnabled = useSettingsStore(s => s.autoStartEnabled);
     const setAutoStartEnabled = useSettingsStore(s => s.setAutoStartEnabled);
+    const shutdownTime = useSettingsStore(s => s.shutdownTime);
+    const setShutdownTime = useSettingsStore(s => s.setShutdownTime);
+    const morningTime = useSettingsStore(s => s.morningTime);
+    const setMorningTime = useSettingsStore(s => s.setMorningTime);
     const setCustomThemes = useSettingsStore(s => s.setCustomThemes);
 
     // UI Store
@@ -111,6 +113,8 @@ export const ModalContainer: React.FC<ModalContainerProps> = ({ commands }) => {
     const setIsMorningRitualOpen = useUIStore(s => s.setIsMorningRitualOpen);
     const isQuickCaptureOpen = useUIStore(s => s.isQuickCaptureOpen);
     const setIsQuickCaptureOpen = useUIStore(s => s.setIsQuickCaptureOpen);
+    const isPluginsOpen = useUIStore(s => s.isPluginsOpen);
+    const setIsPluginsOpen = useUIStore(s => s.setIsPluginsOpen);
     const importInputRef = useUIStore(s => s.importInputRef);
 
     const detailTask = React.useMemo(() => tasks.find(t => t.id === detailModal.taskId), [tasks, detailModal.taskId]);
@@ -138,6 +142,10 @@ export const ModalContainer: React.FC<ModalContainerProps> = ({ commands }) => {
                         onOpenArchive={() => setIsArchiveOpen(true)}
                         autoArchiveEnabled={autoArchiveEnabled}
                         onSetAutoArchiveEnabled={setAutoArchiveEnabled}
+                        notificationsEnabled={notificationsEnabled}
+                        onSetNotificationsEnabled={setNotificationsEnabled}
+                        autoStartEnabled={autoStartEnabled}
+                        onSetAutoStartEnabled={setAutoStartEnabled}
                         onExport={handleExport}
                         onTriggerImport={() => {
                             if (isElectron()) {
@@ -146,17 +154,13 @@ export const ModalContainer: React.FC<ModalContainerProps> = ({ commands }) => {
                                 importInputRef.current?.click();
                             }
                         }}
-                        notificationsEnabled={notificationsEnabled}
-                        onSetNotificationsEnabled={setNotificationsEnabled}
-                        autoStartEnabled={autoStartEnabled}
-                        onSetAutoStartEnabled={setAutoStartEnabled}
                     />
                 )}
             </AnimatePresence>
 
             <AnimatePresence>{isPlanting && <PlantingAnimation onComplete={finishPlanting} />}</AnimatePresence>
             <AnimatePresence>{focusTask && <FocusView task={focusTask} onClose={() => setFocusTaskId(null)} onComplete={handleFocusComplete} onLogDistraction={logDistraction} />}</AnimatePresence>
-            <AnimatePresence>{winModalTaskId && <WinModal task={tasks.find(t => t.id === winModalTaskId)} onSaveWin={(id: string, winText: string) => { setTasks((prev: Task[]) => prev.map(t => t.id === id ? { ...t, win: winText } : t)); setWinModalTaskId(null); }} onClose={() => setWinModalTaskId(null)} />}</AnimatePresence>
+            <AnimatePresence>{winModalTaskId && <WinModal task={tasks.find(t => t.id === winModalTaskId)} onSaveWin={(id: string, winText: string) => { setTasks((prev: Task[]) => prev.map(t => t.id === id ? { ...t, win: winText, isGolden: true } : t)); useSettingsStore.getState().setStats(s => ({ ...s, goldenSeeds: (s.goldenSeeds || 0) + 1 })); setWinModalTaskId(null); }} onClose={() => setWinModalTaskId(null)} />}</AnimatePresence>
             
             <AnimatePresence>{achievementToast && <AchievementToast achievement={achievementToast} onClose={() => setAchievementToast(null)} />}</AnimatePresence>
             <AnimatePresence>{toastMessage && <GenericToast message={toastMessage} onClose={() => setToastMessage(null)} />}</AnimatePresence>
@@ -175,6 +179,7 @@ export const ModalContainer: React.FC<ModalContainerProps> = ({ commands }) => {
             <AnimatePresence>{isMorningRitualOpen && <MorningRitualModal isOpen={isMorningRitualOpen} tasks={tasks} onClose={() => setIsMorningRitualOpen(false)} onSetMITs={handleSetMITs} />}</AnimatePresence>
             <AnimatePresence>{isQuickCaptureOpen && <QuickCaptureOverlay onAddTask={addTask} onClose={() => setIsQuickCaptureOpen(false)} />}</AnimatePresence>
             <AnimatePresence>{isShortcutsOpen && <ShortcutsModal isOpen={isShortcutsOpen} onClose={() => setIsShortcutsOpen(false)} />}</AnimatePresence>
+            <AnimatePresence>{isPluginsOpen && <PluginsModal isOpen={isPluginsOpen} onClose={() => setIsPluginsOpen(false)} />}</AnimatePresence>
             
             <input type="file" ref={importInputRef as any} onChange={handleImport} className="hidden" accept=".json" />
         </Suspense>

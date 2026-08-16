@@ -10,6 +10,7 @@ interface BottomNavProps {
 
 export const BottomNav: React.FC<BottomNavProps> = ({ currentView, setCurrentView }) => {
     const navItems: { id: ViewType; label: string; icon: React.ReactElement<{ className?: string }> }[] = [
+        { id: 'workspace', label: 'Workspace', icon: <span className="text-base">💎</span> as any },
         { id: 'flow', label: 'Flow', icon: <SunIcon /> },
         { id: 'calendar', label: 'Calendar', icon: <CalendarIcon /> },
         { id: 'constellations', label: 'Projects', icon: <SparklesIcon /> },

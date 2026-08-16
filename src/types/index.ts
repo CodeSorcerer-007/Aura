@@ -2,7 +2,7 @@
  * Aura Core Type Definitions
  */
 
-export type ViewType = 'flow' | 'calendar' | 'constellations' | 'grove' | 'journal' | 'review';
+export type ViewType = 'workspace' | 'flow' | 'calendar' | 'constellations' | 'grove' | 'journal' | 'review';
 
 export interface CategoryStyle {
   bg: string;
@@ -10,6 +10,86 @@ export interface CategoryStyle {
   text: string;
   solid: string;
   glowColor?: string;
+}
+
+export type WidgetSize = 'small' | 'medium' | 'large' | 'wide' | 'banner';
+
+export type WidgetType = 
+  | 'capture'
+  | 'shuffled_pinned'
+  | 'focus_timer'
+  | 'triage_deck'
+  | 'career_blocks'
+  | 'grove'
+  | 'momentum'
+  | 'scratchpad'
+  | 'ambient'
+  | 'mini_calendar'
+  | 'zen_minute'
+  | 'voice_memo';
+
+export interface WidgetItem {
+  id: string;
+  type: WidgetType;
+  title: string;
+  size: WidgetSize;
+  order: number;
+  config?: Record<string, any>;
+  pluginId?: string;
+  visible?: boolean;
+}
+
+export interface CareerGoal {
+  id: string;
+  title: string;
+  category: string;
+  quarter: string; // e.g. "Q3 2026"
+  targetDate?: string;
+  completed: boolean;
+  progress: number; // 0 - 100
+  metricLabel?: string;
+  metricValue?: string;
+}
+
+export interface CareerMilestone {
+  id: string;
+  title: string;
+  date: string;
+  role: string;
+  company?: string;
+  icon?: string;
+  achievements?: string[];
+}
+
+export interface CareerProfile {
+  role: string;
+  level: string;
+  currentQuarter: string;
+  velocityScore: number;
+  goals: CareerGoal[];
+  milestones: CareerMilestone[];
+}
+
+export interface AuraPluginSetting {
+  key: string;
+  label: string;
+  type: 'boolean' | 'string' | 'number' | 'select';
+  value: any;
+  options?: { label: string; value: any }[];
+}
+
+export interface AuraPlugin {
+  id: string;
+  name: string;
+  version: string;
+  description: string;
+  icon: string;
+  author: string;
+  enabled: boolean;
+  builtin: boolean;
+  category: 'productivity' | 'audio' | 'gamification' | 'analytics' | 'lifestyle';
+  providedWidgets?: WidgetType[];
+  settings?: AuraPluginSetting[];
 }
 
 export interface ThemeOption {
@@ -49,6 +129,8 @@ export interface Attachment {
   size?: number;
   type?: string;
   path?: string;
+  audioUrl?: string;
+  audioDuration?: number;
 }
 
 export type TaskAttachment = Attachment;
@@ -79,6 +161,8 @@ export interface Task {
   dependsOn?: string;
   estimatedMinutes?: number;
   isGolden?: boolean;
+  audioUrl?: string;
+  audioDuration?: number;
 }
 
 export interface TemplateTask {
@@ -145,6 +229,8 @@ export interface BackupDataPayload {
   grove: GroveTree[];
   stats: UserStats;
   achievements: string[];
+  widgets?: WidgetItem[];
+  careerProfile?: CareerProfile;
 }
 
 export interface ElectronAPI {

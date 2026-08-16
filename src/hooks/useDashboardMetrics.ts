@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { useTaskStore } from '../store/useTaskStore';
 import { useSettingsStore } from '../store/useSettingsStore';
 import { useUIStore } from '../store/useUIStore';
-import { motivationalQuotes, defaultCategories } from '../utils/helpers';
+import { motivationalQuotes, defaultCategories, getTodayDateString } from '../utils/helpers';
 
 export function useDashboardMetrics() {
     const tasks = useTaskStore(s => s.tasks);
@@ -29,7 +29,7 @@ export function useDashboardMetrics() {
     const allThemes = useMemo(() => [...baseThemes, ...customThemes], [baseThemes, customThemes]);
 
     const tasksCompletedToday = useMemo(() => {
-        const todayStr = new Date().toISOString().split('T')[0];
+        const todayStr = getTodayDateString() || new Date().toISOString().split('T')[0];
         return tasks.filter(t => t.completionDate === todayStr).length;
     }, [tasks]);
 
@@ -58,7 +58,7 @@ export function useDashboardMetrics() {
     }, []);
 
     const dailyStats = useMemo(() => {
-        const todayStr = new Date().toISOString().split('T')[0];
+        const todayStr = getTodayDateString() || new Date().toISOString().split('T')[0];
         const completedToday = tasks.filter(t => t.completionDate === todayStr).length;
         const focusToday = tasks.reduce((acc, task) => task.completionDate === todayStr ? acc + (task.focusSessions || 0) : acc, 0);
         return { completed: completedToday, focusSessions: focusToday, achievements: unlockedAchievements.length };

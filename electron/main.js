@@ -335,7 +335,7 @@ function registerIPCHandlers() {
                 }
             }
 
-            return { success: true, filePath };
+            return { success: true, filePath, filepath: filePath };
         } catch (err) {
             console.error('Backup error:', err);
             return { success: false, error: err.message };
@@ -352,12 +352,12 @@ function registerIPCHandlers() {
                 properties: ['openFile']
             });
 
-            if (result.canceled || result.filePaths.length === 0) return null;
+            if (result.canceled || result.filePaths.length === 0) return { success: false, canceled: true };
             const content = fs.readFileSync(result.filePaths[0], 'utf-8');
-            return JSON.parse(content);
+            return { success: true, data: JSON.parse(content) };
         } catch (err) {
             console.error('Restore error:', err);
-            return null;
+            return { success: false, error: err.message };
         }
     });
 
