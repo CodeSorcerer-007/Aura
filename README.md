@@ -1,136 +1,204 @@
 <div align="center">
   <img src="Logo.png" width="120" alt="Aura Logo" />
-  
-  # 🌿 Aura v3.0
-  **Mindful Productivity for Windows**
+
+  # Aura
+  **A Local-First, Mindful Productivity Application for Desktop**
 
   <p>
-    A privacy-first, fully offline productivity suite that lives on your desktop.<br/>
-    No subscriptions. No cloud. No server. Just you, your tasks, and deep focus.
+    A privacy-focused desktop productivity suite engineered for deep work, intentional task management, and offline reliability. Built without cloud dependencies, external trackers, or subscription locks.
   </p>
 
   <p>
-    <a href="#-features">Features</a> •
-    <a href="#-installation">Installation</a> •
-    <a href="#-tech-stack">Tech Stack</a> •
-    <a href="#-privacy">Privacy</a>
+    <a href="#overview">Overview</a> •
+    <a href="#key-features">Key Features</a> •
+    <a href="#architecture--tech-stack">Tech Stack</a> •
+    <a href="#getting-started">Getting Started</a> •
+    <a href="#keyboard-shortcuts">Shortcuts</a> •
+    <a href="#privacy--security">Privacy</a> •
+    <a href="#license">License</a>
   </p>
-  
-  ![Electron](https://img.shields.io/badge/Electron-191970?style=for-the-badge&logo=Electron&logoColor=white)
-  ![React](https://img.shields.io/badge/react-%2320232a.svg?style=for-the-badge&logo=react&logoColor=%2361DAFB)
-  ![TailwindCSS](https://img.shields.io/badge/tailwindcss-%2338B2AC.svg?style=for-the-badge&logo=tailwind-css&logoColor=white)
-  ![Local_First](https://img.shields.io/badge/Local_First-Offline-4caf50?style=for-the-badge&logo=databricks&logoColor=white)
+
+  <p>
+    <img src="https://img.shields.io/badge/Platform-Windows%20%7C%20macOS%20%7C%20Linux-blue?style=flat-square" alt="Platform" />
+    <img src="https://img.shields.io/badge/Framework-Electron%20%7C%20React-blueviolet?style=flat-square" alt="Framework" />
+    <img src="https://img.shields.io/badge/Language-TypeScript-blue?style=flat-square" alt="TypeScript" />
+    <img src="https://img.shields.io/badge/Styling-TailwindCSS%20v4-38B2AC?style=flat-square" alt="TailwindCSS" />
+    <img src="https://img.shields.io/badge/Data%20Storage-Local%20First-forestgreen?style=flat-square" alt="Local First" />
+    <img src="https://img.shields.io/badge/License-MIT-green?style=flat-square" alt="License" />
+  </p>
 </div>
 
-<br/>
+---
 
-## ✨ Features
+## Overview
 
-### ⚡ Global Quick Capture
-Hit <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>Space</kbd> anywhere in Windows to summon the frameless Quick Capture overlay. Log a thought instantly without breaking your flow, and Aura will save it to your inbox in the background.
+Aura is a desktop productivity system designed to minimize context switching and cognitive fatigue. Unlike conventional project management software that relies on remote databases, telemetry, and background services, Aura operates entirely on your local machine.
 
-### 📋 Smart Task Syntax
-Type tasks naturally — Aura understands you. 
+By combining natural language processing, system-level global hotkeys, offline audio synthesis, and customizable widget systems, Aura provides a seamless workflow for individual planning, execution, and daily reflection.
+
+---
+
+## Key Features
+
+### Global Quick Capture
+Access the input system from any application using system-wide hotkeys (`Ctrl+Shift+Space`). Capture ideas, assign tags, or schedule deadlines without breaking your active workflow.
+
+### Natural Language Syntax
+Tasks can be defined using inline shorthand syntax that is automatically parsed in real time:
 
 ```text
-Design the landing page by friday @work !
-Submit report every week #Work
-Call dentist in 2 weeks @health
-Plan sprint Q3
+Prepare financial report by friday @finance #Work !
+Follow up on system architecture every 2 weeks @engineering
+Schedule medical appointment in 3 days @health
 ```
 
-<div align="center">
+| Token | Description | Example |
+|---|---|---|
+| `!` | Flags the task as urgent / high priority | `Complete deployment !` |
+| `@tag` | Assigns an indexed, filterable tag | `@design`, `@backend` |
+| `#Category` | Categorizes the item into a project or area | `#Work`, `#Personal` |
+| `by <time>` | Resolves relative deadlines and dates | `by friday`, `by 5pm` |
+| `every <interval>` | Configures recurrent scheduling | `every day`, `every monday` |
 
-| Syntax | What it does |
-|:---:|:---|
-| `!` | Sets task as urgent (high priority) |
-| `@tag` | Adds a searchable tag |
-| `#Category` | Assigns a category |
-| `by friday` | Sets a deadline to the upcoming Friday |
-| `every day` | Creates a recurring task |
+### Intentional Planning & Daily Rituals
+- **Morning Intention:** Select up to three Most Important Tasks (MITs) to anchor daily focus.
+- **Capacity Budgeting:** Estimate task durations to avoid exceeding sustainable daily capacity thresholds.
+- **Evening Review:** End-of-day reflection flow with automated notifications to log accomplishments and maintain progress logs.
 
-</div>
+### Deep Work & Ambient Sound Synthesis
+- **Focus Timer:** Customizable Pomodoro and interval work sessions.
+- **Distraction Logging:** Quick-log intrusive thoughts or tangents without terminating active focus intervals.
+- **Procedural Ambient Sound:** Pure local sound synthesis (Pink Noise, Brown Noise, White Noise) powered by Tone.js without streaming audio or downloading assets.
+
+### Extensible Plugin & Widget Engine
+- **Customizable Dashboard:** Modular widget canvas supporting drag-and-drop, layout persistence, and dynamic state bindings.
+- **Plugin Registry:** Clean API to extend functionality, views, and data processing routines.
+
+### Voice Capture & Audio Notes
+Record voice memos directly inside tasks. Integrated audio visualizer and local audio storage keep all recordings structured and easily accessible.
+
+### Native Filesystem Integration
+Attach local files (`.pdf`, `.docx`, images, source code) by dragging and dropping them into tasks. Attachments are securely organized within the local application storage directory and can be opened directly in default operating system handlers.
+
+### The Grove
+A visual representation of productivity where task completion contributes to a sustainable digital ecosystem, offering non-gamified feedback on task execution.
 
 ---
 
-### 🌅 Intentional Rituals
-* **Morning Intention:** Start your day by picking up to 3 Most Important Tasks (MITs) which are pinned with golden stars.
-* **Evening Shutdown:** Get a native Windows notification at your specified time to close out your day and reflect on your wins.
+## Architecture & Tech Stack
 
-### ⏱️ Deep Work & Distraction Tracking
-* **Focus Timer:** Built-in Pomodoro timer with offline ambient noise (Pink/Brown/White) powered by Tone.js.
-* **Distraction Logging:** Feel the urge to check your phone? Click `⚡ Distracted?` to log the thought without stopping the timer. Review these in your daily Journal to build focus awareness.
-* **Daily Capacity Limit:** Give tasks time estimates (`15m`, `1h`). Aura warns you if you plan more than an 8-hour workday.
+```
++------------------------------------------------------------------+
+|                       Aura Desktop Shell                         |
+|                         (Electron 43)                            |
++------------------------------------------------------------------+
+|                   User Interface Layer (React 18)                |
+|  - Zustand State Stores (Tasks, UI, Widgets, Plugins)            |
+|  - Framer Motion Layout Animations & Transitions                 |
+|  - Tailwind CSS v4 Design Tokens & Responsive Utilities          |
+|  - Tone.js Local Audio Synthesis Engine                          |
++------------------------------------------------------------------+
+|                    Local Storage & Integration                   |
+|  - Native Filesystem Access (AppData / Local Config)             |
+|  - Automated 30-Day Rolling JSON Snapshots                       |
+|  - Offline SQLite / IndexedDB State Persistence                  |
++------------------------------------------------------------------+
+```
 
-### 📎 Native Filesystem Attachments
-Drag and drop any file (`.pdf`, `.docx`, images, code) directly into tasks. Files are securely copied to your local AppData folder and can be launched in their native Windows applications directly from Aura.
+### Core Technologies
 
-### 🌿 The Grove
-Your tasks grow into a visual garden. Complete tasks → plant seeds → watch your Grove flourish with trees, flowers, and glowing orbs. A mindful, non-gamified way to see your progress.
+| Layer | Technology | Purpose |
+|---|---|---|
+| Runtime | [Electron](https://www.electronjs.org/) | Desktop window management, IPC communication, and OS integration |
+| Frontend | [React 18](https://react.dev/) | Component hierarchy, virtual rendering, and UI synchronization |
+| Build Tool | [Vite 6](https://vitejs.dev/) | Fast HMR development server and optimized bundle generation |
+| State Management | [Zustand 5](https://github.com/pmndrs/zustand) | Decoupled, high-performance client state management |
+| Audio Engine | [Tone.js](https://tonejs.github.io/) | Web Audio API wrapper for browser-synthesized focus noise |
+| Virtualization | [@tanstack/react-virtual](https://tanstack.com/virtual) | Performant rendering for long lists and extensive data views |
+| Testing | [Vitest](https://vitest.dev/) & [Testing Library](https://testing-library.com/) | Unit, component, and user journey integration tests |
 
 ---
 
-## 🚀 Installation & Building
+## Getting Started
 
-Aura v3.0 is a native Electron application for Windows, macOS, and Linux.
+### Prerequisites
+- **Node.js**: Version 18.0 or higher
+- **npm**: Version 9.0 or higher
 
-### Build from Source
+### Installation
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/CodeSorcerer-007/Aura.git
+   cd Aura
+   ```
+
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+3. Launch development environment:
+   ```bash
+   # Starts Vite development server and Electron shell
+   npm run electron:dev
+   ```
+
+### Production Build
+
+Compile the web application and package native desktop executables:
+
 ```bash
-git clone https://github.com/CodeSorcerer-007/Aura.git
-cd aura
-npm install
-
-# Run in Development Mode
-npm run electron:dev
-
-# Build the Installers (Windows .exe, macOS .dmg, Linux .AppImage)
+# Production bundle and platform-specific installer packaging
 npm run electron:build
 ```
-The compiled installers will be available in the `release` folder.
 
-<br/>
+Packaged installers and standalone binaries will be placed in the `release/` directory.
 
-## 🏗️ Tech Stack
+### Running Test Suites
 
-| Technology | Purpose |
-|---|---|
-| **[Electron](https://www.electronjs.org/)** | Native desktop shell & OS integration |
-| **[React 18](https://react.dev/)** | Core UI framework |
-| **[Zustand](https://zustand-demo.pmnd.rs/)** | Ultra-fast, modular state management |
-| **[Tailwind CSS v4](https://tailwindcss.com/)** | Utility-first styling |
-| **[Framer Motion](https://www.framer-motion.com/)** | Liquid-smooth animations |
-| **[Tone.js](https://tonejs.github.io/)** | Local audio synthesis for focus noise |
+Execute unit and integration tests using Vitest:
 
-<br/>
-
-## 🔒 Privacy
-
-- 🚫 **Zero telemetry.** No analytics, no tracking, no crash reporting.
-- 🚫 **Zero network requests.** Fully offline.
-- 💾 **Local Data.** All databases and file attachments live exclusively on your hard drive (`%APPDATA%\Aura`).
-- 🔄 **Auto-Backups.** Automatic daily 30-day rolling JSON backups to your Documents folder.
-- ☁️ **No Cloud.** You own your data.
-
-<br/>
-
-## ⌨️ Keyboard Shortcuts
-
-| Key | Action |
-|:---:|:---|
-| <kbd>Ctrl+Shift+Space</kbd> | Global Quick Capture (from anywhere in OS) |
-| <kbd>N</kbd> | New task (focus capture bar in-app) |
-| <kbd>S</kbd> | Open settings |
-| <kbd>/</kbd> | Open command palette |
-| <kbd>1</kbd> - <kbd>6</kbd> | Switch between views (Flow, Calendar, Projects, Grove, Journal, Review) |
-| <kbd>Escape</kbd> | Close any open modal |
-
-<br/>
+```bash
+npm test
+```
 
 ---
 
-<div align="center">
-  <p>Made with 🌿 for people who believe productivity should feel calm.</p>
-  <a href="https://opensource.org/licenses/MIT">
-    <img src="https://img.shields.io/badge/License-MIT-green.svg?style=flat-square" alt="MIT License">
-  </a>
-</div>
+## Keyboard Shortcuts
+
+| Shortcut | Scope | Action |
+|---|---|---|
+| `Ctrl + Shift + Space` | Global (OS) | Summon Quick Capture overlay from any application |
+| `N` | Application | Focus the primary task capture input |
+| `/` | Application | Open the Command Palette |
+| `S` | Application | Open Application Settings |
+| `1` - `6` | Application | Switch active views (Flow, Calendar, Projects, Grove, Journal, Review) |
+| `Escape` | Application | Dismiss active modal or overlay |
+
+---
+
+## Privacy & Security
+
+- **Strictly Offline**: Aura does not make outbound network calls, transmit analytics, or communicate with remote servers.
+- **Local Data Sovereignty**: All application data, configurations, and attachments reside strictly within local user directories (`%APPDATA%\Aura` on Windows, `~/Library/Application Support/Aura` on macOS, `~/.config/Aura` on Linux).
+- **Automated Rolling Backups**: Configurable daily JSON backups are written directly to your local documents directory, enabling version recovery without third-party services.
+- **Zero Third-Party Tracking**: No telemetry SDKs, crash report collectors, or behavioral analysis tools are bundled with the software.
+
+---
+
+## Contributing
+
+Contributions to Aura are welcome. When submitting contributions, please follow these guidelines:
+
+1. Fork the repository and create a feature branch (`git checkout -b feature/new-capability`).
+2. Verify all test suites pass (`npm test`).
+3. Maintain TypeScript typings and project code formatting standards.
+4. Commit changes with clear, descriptive messages.
+5. Open a Pull Request detailing the changes and technical context.
+
+---
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).
