@@ -15,3 +15,14 @@ pnpm-debug.log*
 .DS_Store
 release/
 release
+
+# Android
+aura-android/.gradle/
+aura-android/build/
+aura-android/*/build/
+aura-android/local.properties
+aura-android/.kotlin/
+aura-android/*.iml
+aura-android/.idea/
+*.hprof
+*.apk
