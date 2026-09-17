@@ -105,14 +105,24 @@ fun AuraHeader(
 
         Spacer(modifier = Modifier.height(6.dp))
 
-        // Title
-        Text(
-            text = "Aura",
-            color = theme.textPrimaryColor,
-            fontSize = 38.sp,
-            fontWeight = FontWeight.Bold,
-            letterSpacing = (-0.5).sp
-        )
+        // Title with official Aura Logo
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+        ) {
+            AuraLogoEmblem(
+                modifier = Modifier.size(38.dp),
+                glowAlpha = 0.6f
+            )
+            Spacer(modifier = Modifier.width(10.dp))
+            Text(
+                text = "Aura",
+                color = theme.textPrimaryColor,
+                fontSize = 36.sp,
+                fontWeight = FontWeight.Bold,
+                letterSpacing = (-0.5).sp
+            )
+        }
 
         // Subtitle Quote
         Text(

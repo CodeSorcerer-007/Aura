@@ -150,12 +150,19 @@ fun SettingsModal(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(
-                            text = "Settings",
-                            color = theme.textPrimaryColor,
-                            fontSize = 22.sp,
-                            fontWeight = FontWeight.Bold
-                        )
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            com.example.aura.ui.components.AuraLogoEmblem(
+                                modifier = Modifier.size(24.dp),
+                                glowAlpha = 0.5f
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "Settings",
+                                color = theme.textPrimaryColor,
+                                fontSize = 22.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
                         Box(
                             modifier = Modifier
                                 .size(32.dp)

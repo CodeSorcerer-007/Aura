@@ -585,7 +585,63 @@ fun UploadIcon(modifier: Modifier = Modifier.size(24.dp), tint: Color = Color.Wh
     }
 }
 
+@Composable
+fun AuraLogoEmblem(
+    modifier: Modifier = Modifier.size(36.dp),
+    glowAlpha: Float = 0.5f
+) {
+    val haloBrush = androidx.compose.ui.graphics.Brush.linearGradient(
+        colors = listOf(
+            Color(0xFFFFB36B),
+            Color(0xFFFF7F7F),
+            Color(0xFFD77BDA),
+            Color(0xFF9B78F5)
+        ),
+        start = Offset.Zero,
+        end = Offset.Infinite
+    )
+
+    Canvas(modifier = modifier) {
+        val w = size.width
+        val h = size.height
+        val strokeWidth = (w * 0.08f).coerceAtLeast(2.dp.toPx())
+        val glowWidth = strokeWidth * 2.2f
+        val arcRect = androidx.compose.ui.geometry.Rect(
+            left = w * 0.16f,
+            top = h * 0.16f,
+            right = w * 0.84f,
+            bottom = h * 0.84f
+        )
+
+        // Outer glow
+        drawArc(
+            brush = haloBrush,
+            startAngle = 195f,
+            sweepAngle = 300f,
+            useCenter = false,
+            topLeft = Offset(arcRect.left, arcRect.top),
+            size = Size(arcRect.width, arcRect.height),
+            style = Stroke(width = glowWidth, cap = StrokeCap.Round),
+            alpha = glowAlpha
+        )
+
+        // Core crisp arc
+        drawArc(
+            brush = haloBrush,
+            startAngle = 195f,
+            sweepAngle = 300f,
+            useCenter = false,
+            topLeft = Offset(arcRect.left, arcRect.top),
+            size = Size(arcRect.width, arcRect.height),
+            style = Stroke(width = strokeWidth, cap = StrokeCap.Round)
+        )
+    }
+}
+
 object AuraIcons {
+    @Composable
+    fun Logo(modifier: Modifier = Modifier.size(36.dp), glowAlpha: Float = 0.5f) = AuraLogoEmblem(modifier = modifier, glowAlpha = glowAlpha)
+
     @Composable
     fun Paperclip(modifier: Modifier = Modifier, color: Color = Color.White) = PaperclipIcon(modifier = modifier, tint = color)
 

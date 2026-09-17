@@ -1,8 +1,21 @@
-# Aura — Native Android
+<div align="center">
+  <img src="Aura_logo.svg" width="140" alt="Aura Logo" />
 
-A **100% Native Android**, mindful productivity and task management application built with **Jetpack Compose**, **Kotlin**, and an embedded **SQLite** database.
+  # Aura — Native Android
+  **A 100% Native, Mindful Productivity Application for Android (Jetpack Compose & Kotlin)**
 
-Aura delivers deep work planning, intentional task organization, and daily reflection completely offline—free of cloud dependencies, trackers, or web wrappers.
+  <p>
+    A privacy-first, mindful productivity app engineered for deep focus, intentional planning, and daily reflection. Built with zero web wrappers, zero telemetry, and pure offline reliability.
+  </p>
+
+  <p>
+    <img src="https://img.shields.io/badge/Platform-Android%208.0%2B%20(API%2026--36)-green?style=flat-square" alt="Platform" />
+    <img src="https://img.shields.io/badge/Language-Kotlin%202.0.21-purple?style=flat-square" alt="Kotlin" />
+    <img src="https://img.shields.io/badge/UI-Jetpack%20Compose-blue?style=flat-square" alt="Jetpack Compose" />
+    <img src="https://img.shields.io/badge/Database-SQLite%20(Local--First)-orange?style=flat-square" alt="SQLite" />
+    <img src="https://img.shields.io/badge/License-MIT-teal?style=flat-square" alt="License" />
+  </p>
+</div>
 
 ---
 
