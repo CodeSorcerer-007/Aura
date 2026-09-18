@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="Aura_logo.svg" width="140" alt="Aura Logo" />
+  <img src="Aura_logo.png" width="140" alt="Aura Logo" />
 
   # Aura — Native Android
   **A 100% Native, Mindful Productivity Application for Android (Jetpack Compose & Kotlin)**
@@ -82,7 +82,7 @@ Aura/
 │   ├── settings.gradle.kts
 │   └── gradlew.bat
 ├── aura.apk                       # Ready-to-install Android APK
-├── Aura_logo.svg                  # Official application emblem
+├── Aura_logo.png                  # Official application emblem
 └── README.md
 ```
 
