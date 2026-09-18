@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -241,6 +242,7 @@ fun ReviewView(
                                             if (label.isNotEmpty()) {
                                                 Text(
                                                     text = label,
+                                                    modifier = Modifier.wrapContentWidth(unbounded = true, align = Alignment.Start),
                                                     color = theme.textSecondaryColor.copy(alpha = 0.75f),
                                                     fontSize = 8.5.sp,
                                                     fontWeight = FontWeight.SemiBold,

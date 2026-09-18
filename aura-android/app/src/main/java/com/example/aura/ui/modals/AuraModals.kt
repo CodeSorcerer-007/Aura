@@ -722,6 +722,25 @@ fun FocusModal(
                 .padding(24.dp),
             contentAlignment = Alignment.Center
         ) {
+            // Top-Right Close Button
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .size(36.dp)
+                    .clip(CircleShape)
+                    .background(Color.White.copy(alpha = 0.14f))
+                    .clickable {
+                        SoundPlayer.stopNoise()
+                        onClose()
+                    },
+                contentAlignment = Alignment.Center
+            ) {
+                XIcon(
+                    modifier = Modifier.size(16.dp),
+                    tint = Color.White
+                )
+            }
+
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center

@@ -194,7 +194,7 @@ fun MainScreen(
                             templates = templates,
                             allCategories = customCategories,
                             theme = activeTheme,
-                            bottomPadding = 148.dp,
+                            bottomPadding = 84.dp,
                             onToggleTask = { viewModel.toggleTask(it) },
                             onSaveTemplate = { name, catTasks ->
                                 viewModel.saveTemplateFromTasks(name, catTasks)
@@ -207,7 +207,7 @@ fun MainScreen(
                             goldenSeeds = userStats.goldenSeeds,
                             allCategories = customCategories,
                             theme = activeTheme,
-                            bottomPadding = 148.dp,
+                            bottomPadding = 84.dp,
                             onPlantSeed = {
                                 viewModel.plantSeed("oak")
                             }
@@ -217,7 +217,7 @@ fun MainScreen(
                             journalEntries = journalEntries,
                             completedTasks = tasks.filter { it.completed },
                             theme = activeTheme,
-                            bottomPadding = 148.dp,
+                            bottomPadding = 84.dp,
                             onSaveEntry = { viewModel.saveJournalEntry(it) }
                         )
 
@@ -227,7 +227,7 @@ fun MainScreen(
                             unlockedAchievements = unlockedAchievements,
                             allCategories = customCategories,
                             theme = activeTheme,
-                            bottomPadding = 148.dp,
+                            bottomPadding = 84.dp,
                             onDeleteStaleTask = { viewModel.deleteTask(it) }
                         )
                     }

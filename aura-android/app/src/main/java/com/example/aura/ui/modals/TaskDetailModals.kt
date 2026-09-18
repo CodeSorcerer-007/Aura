@@ -58,6 +58,7 @@ import com.example.aura.data.model.AttachmentMeta
 import com.example.aura.data.model.Task
 import com.example.aura.ui.components.AuraIcons
 import com.example.aura.ui.components.CheckIcon
+import com.example.aura.ui.components.XIcon
 
 @Composable
 fun TaskDetailModal(
@@ -132,14 +133,34 @@ fun TaskDetailModal(
                         .fillMaxWidth()
                         .verticalScroll(rememberScrollState())
                 ) {
-                    // Title Input
-                    Text(
-                        text = "Task Details",
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = theme.accentColor,
-                        modifier = Modifier.padding(bottom = 8.dp)
-                    )
+                    // Title & Close Action
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 8.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Task Details",
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = theme.accentColor
+                        )
+                        Box(
+                            modifier = Modifier
+                                .size(28.dp)
+                                .clip(CircleShape)
+                                .background(theme.bgColor)
+                                .clickable { onClose() },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            XIcon(
+                                modifier = Modifier.size(14.dp),
+                                tint = theme.textSecondaryColor
+                            )
+                        }
+                    }
 
                     BasicTextField(
                         value = text,

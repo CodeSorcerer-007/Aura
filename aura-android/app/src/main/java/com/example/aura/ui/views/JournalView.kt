@@ -21,6 +21,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.DatePicker
@@ -166,22 +168,21 @@ fun JournalView(
 
             // Prompts Section
             Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 20.dp)
+                modifier = Modifier.fillMaxWidth()
             ) {
                 Text(
                     text = "Prompts",
                     color = theme.textPrimaryColor,
                     fontSize = 15.sp,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(horizontal = 20.dp)
                 )
                 Spacer(modifier = Modifier.height(8.dp))
-                FlowRow(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                LazyRow(
+                    contentPadding = PaddingValues(horizontal = 20.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    prompts.forEach { prompt ->
+                    items(prompts) { prompt ->
                         Box(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(16.dp))
@@ -190,12 +191,12 @@ fun JournalView(
                                 .clickable {
                                     entryContent += (if (entryContent.isNotEmpty()) "\n\n" else "") + "**$prompt**\n"
                                 }
-                                .padding(horizontal = 12.dp, vertical = 6.dp)
+                                .padding(horizontal = 14.dp, vertical = 7.dp)
                         ) {
                             Text(
                                 text = prompt,
                                 color = theme.textSecondaryColor,
-                                fontSize = 12.sp,
+                                fontSize = 12.5.sp,
                                 fontWeight = FontWeight.Medium
                             )
                         }
@@ -203,14 +204,14 @@ fun JournalView(
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(14.dp))
 
             // Journal Text Area
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 20.dp)
-                    .height(260.dp)
+                    .height(175.dp)
                     .clip(RoundedCornerShape(16.dp))
                     .background(theme.bgSecondaryColor)
                     .border(1.dp, theme.borderColor, RoundedCornerShape(16.dp))
@@ -239,7 +240,7 @@ fun JournalView(
                 )
             }
 
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
             // Save row with "Saved!" indicator
             Row(
@@ -263,12 +264,12 @@ fun JournalView(
                         .clip(RoundedCornerShape(12.dp))
                         .background(theme.accentColor)
                         .clickable { handleSave() }
-                        .padding(horizontal = 24.dp, vertical = 10.dp)
+                        .padding(horizontal = 22.dp, vertical = 10.dp)
                 ) {
                     Text(
-                        text = "Save",
+                        text = "Save Entry",
                         color = Color.Black,
-                        fontSize = 14.sp,
+                        fontSize = 13.5.sp,
                         fontWeight = FontWeight.Bold
                     )
                 }

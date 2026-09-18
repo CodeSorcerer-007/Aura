@@ -49,7 +49,7 @@ fun AuraHeader(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 20.dp, vertical = 4.dp),
+            .padding(start = 20.dp, end = 20.dp, top = 8.dp, bottom = 4.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         // Top action bar

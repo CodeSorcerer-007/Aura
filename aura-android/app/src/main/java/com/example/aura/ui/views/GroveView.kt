@@ -296,12 +296,18 @@ private fun TreeCard(tree: GroveTree, theme: AuraThemeModel, modifier: Modifier 
 private fun DrawScope.drawOakTree(growth: Float, color: Color) {
     val w = size.width
     val h = size.height
-    val trunkHeight = h * (0.15f + growth * 0.45f)
+    val trunkHeight = h * (0.18f + growth * 0.42f)
     val startY = h * 0.9f
     val endY = startY - trunkHeight
 
     // Trunk
     drawLine(color, Offset(w * 0.5f, startY), Offset(w * 0.5f, endY), strokeWidth = 3f, cap = StrokeCap.Round)
+
+    // Oak foliage crown at top (always visible so saplings look alive!)
+    val crownRadius = 7f + growth * 11f
+    drawCircle(Color(0xFF4ADE80).copy(alpha = 0.85f), radius = crownRadius, center = Offset(w * 0.5f, endY))
+    drawCircle(Color(0xFF22C55E).copy(alpha = 0.7f), radius = crownRadius * 0.8f, center = Offset(w * 0.5f - 3f, endY - 2f))
+    drawCircle(Color(0xFF86EFAC).copy(alpha = 0.6f), radius = crownRadius * 0.6f, center = Offset(w * 0.5f + 3f, endY + 2f))
 
     // Branches
     val branchLevels = listOf(0.3f, 0.5f, 0.7f, 0.85f)
@@ -315,7 +321,7 @@ private fun DrawScope.drawOakTree(growth: Float, color: Color) {
             val ey = by - cos(rad) * bLen
             drawLine(color, Offset(w * 0.5f, by), Offset(ex, ey), strokeWidth = 2f, cap = StrokeCap.Round)
             // Foliage node
-            drawCircle(Color(0xFF4ADE80).copy(alpha = 0.7f), radius = 4f * growth, center = Offset(ex, ey))
+            drawCircle(Color(0xFF4ADE80).copy(alpha = 0.75f), radius = 5f * growth + 3f, center = Offset(ex, ey))
         }
     }
 }
@@ -329,6 +335,17 @@ private fun DrawScope.drawPineTree(growth: Float, color: Color) {
 
     // Trunk
     drawLine(color, Offset(w * 0.5f, startY), Offset(w * 0.5f, endY), strokeWidth = 3f, cap = StrokeCap.Round)
+
+    // Top sapling crown triangle (always visible so young pines have a recognizable silhouette)
+    val topWidth = 8f + growth * 10f
+    val topHeight = 12f + growth * 8f
+    val topPinePath = Path().apply {
+        moveTo(w * 0.5f, endY - topHeight * 0.5f)
+        lineTo(w * 0.5f + topWidth, endY + topHeight * 0.5f)
+        lineTo(w * 0.5f - topWidth, endY + topHeight * 0.5f)
+        close()
+    }
+    drawPath(topPinePath, color = Color(0xFF16A34A).copy(alpha = 0.9f))
 
     // Pine triangular layers
     val layers = listOf(0.3f to 0.35f, 0.6f to 0.28f, 0.85f to 0.20f)
@@ -356,6 +373,12 @@ private fun DrawScope.drawCherryBlossomTree(growth: Float, color: Color) {
 
     // Trunk
     drawLine(color, Offset(w * 0.5f, startY), Offset(w * 0.5f, endY), strokeWidth = 2.5f, cap = StrokeCap.Round)
+
+    // Blossom cluster at crown (always visible)
+    val crownRadius = 6f + growth * 6f
+    drawCircle(Color(0xFFFECDD3), radius = crownRadius, center = Offset(w * 0.5f, endY))
+    drawCircle(Color(0xFFF472B6), radius = crownRadius * 0.7f, center = Offset(w * 0.5f + 3f, endY - 2f))
+    drawCircle(Color(0xFFFB7185).copy(alpha = 0.7f), radius = crownRadius * 0.5f, center = Offset(w * 0.5f - 2f, endY + 2f))
 
     // Branches & Blossoms
     val branches = listOf(

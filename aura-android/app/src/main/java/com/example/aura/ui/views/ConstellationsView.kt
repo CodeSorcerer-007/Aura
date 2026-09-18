@@ -147,28 +147,56 @@ private fun ConstellationProject(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.fillMaxWidth()
     ) {
-        // Save Template Button
-        Box(
+        // Category Header with Task count and contextual Save Template action
+        Row(
             modifier = Modifier
-                .clip(RoundedCornerShape(20.dp))
-                .background(theme.bgSecondaryColor)
-                .border(1.dp, theme.borderColor, RoundedCornerShape(20.dp))
-                .clickable(enabled = !isTemplated) { onSaveTemplate(category, tasks) }
-                .padding(horizontal = 14.dp, vertical = 6.dp)
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp, vertical = 4.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                BookmarkIcon(modifier = Modifier.size(13.dp), tint = theme.textSecondaryColor)
-                Spacer(modifier = Modifier.width(6.dp))
-                Text(
-                    text = if (isTemplated) "Saved" else "Save Template",
-                    color = theme.textSecondaryColor,
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Medium
+                Box(
+                    modifier = Modifier
+                        .size(10.dp)
+                        .clip(CircleShape)
+                        .background(solidColor)
                 )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "$category (${tasks.size} ${if (tasks.size == 1) "task" else "tasks"})",
+                    color = theme.textPrimaryColor,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
+
+            // Save Template Action
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(if (isTemplated) solidColor.copy(alpha = 0.2f) else theme.bgSecondaryColor)
+                    .border(1.dp, if (isTemplated) solidColor.copy(alpha = 0.45f) else theme.borderColor, RoundedCornerShape(16.dp))
+                    .clickable(enabled = !isTemplated) { onSaveTemplate(category, tasks) }
+                    .padding(horizontal = 12.dp, vertical = 6.dp)
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    BookmarkIcon(
+                        modifier = Modifier.size(12.dp),
+                        tint = if (isTemplated) solidColor else theme.textSecondaryColor
+                    )
+                    Spacer(modifier = Modifier.width(5.dp))
+                    Text(
+                        text = if (isTemplated) "Template Saved" else "Save Template",
+                        color = if (isTemplated) theme.textPrimaryColor else theme.textSecondaryColor,
+                        fontSize = 11.5.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
             }
         }
 
-        Spacer(modifier = Modifier.height(18.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
         // Constellation Canvas with central node and surrounding task nodes
         val canvasSize = 260.dp
