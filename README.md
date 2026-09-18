@@ -15,6 +15,12 @@
     <img src="https://img.shields.io/badge/Database-SQLite%20(Local--First)-orange?style=flat-square" alt="SQLite" />
     <img src="https://img.shields.io/badge/License-MIT-teal?style=flat-square" alt="License" />
   </p>
+
+  <p>
+    <a href="aura.apk">
+      <img src="https://img.shields.io/badge/Direct%20Download-aura.apk%20(Ready%20to%20Install)-2DD4BF?style=for-the-badge&logo=android&logoColor=black" alt="Download APK" />
+    </a>
+  </p>
 </div>
 
 ---
@@ -75,8 +81,8 @@ Aura/
 │   ├── build.gradle.kts
 │   ├── settings.gradle.kts
 │   └── gradlew.bat
-├── aura1.js                       # Original reference web app source
-├── Aura_Native_Android_Migration_Master_Prompt.md
+├── aura.apk                       # Ready-to-install Android APK
+├── Aura_logo.svg                  # Official application emblem
 └── README.md
 ```
 
@@ -84,7 +90,11 @@ Aura/
 
 ## Getting Started
 
-### Prerequisites
+### Quick Install (Direct APK)
+
+Download [`aura.apk`](aura.apk) directly from this repository and install it on your Android device (allow "Install from unknown sources" if prompted).
+
+### Prerequisites (For Developers)
 - Android Studio Ladybug (2024.2.1+) or newer
 - JDK 17 or JDK 21
 - Android SDK Platform 36 (or API 34+)

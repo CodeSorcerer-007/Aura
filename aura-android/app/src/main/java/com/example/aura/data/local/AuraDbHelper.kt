@@ -202,8 +202,10 @@ class AuraDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, 
         if (!compDate.isNullOrEmpty()) json.put("completionDate", compDate)
         val recStr = c.getString(c.getColumnIndexOrThrow("recurring"))
         if (!recStr.isNullOrEmpty()) json.put("recurring", JSONObject(recStr))
-        val dep = c.getLong(c.getColumnIndexOrThrow("dependsOn"))
-        if (!c.isNull(c.getColumnIndexOrThrow("dependsOn"))) json.put("dependsOn", dep)
+        val depIndex = c.getColumnIndexOrThrow("dependsOn")
+        if (!c.isNull(depIndex)) {
+            json.put("dependsOn", c.getLong(depIndex))
+        }
         json.put("notes", c.getString(c.getColumnIndexOrThrow("notes")) ?: "")
         val attStr = c.getString(c.getColumnIndexOrThrow("attachments"))
         if (!attStr.isNullOrEmpty()) json.put("attachments", JSONArray(attStr))

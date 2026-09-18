@@ -49,7 +49,7 @@ fun AuraHeader(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 20.dp, vertical = 8.dp),
+            .padding(horizontal = 20.dp, vertical = 4.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         // Top action bar
@@ -131,7 +131,7 @@ fun AuraHeader(
             fontSize = 13.sp,
             fontStyle = FontStyle.Italic,
             textAlign = TextAlign.Center,
-            modifier = Modifier.padding(top = 4.dp, bottom = 14.dp, start = 16.dp, end = 16.dp)
+            modifier = Modifier.padding(top = 4.dp, bottom = 8.dp, start = 16.dp, end = 16.dp)
         )
 
         // Daily Momentum

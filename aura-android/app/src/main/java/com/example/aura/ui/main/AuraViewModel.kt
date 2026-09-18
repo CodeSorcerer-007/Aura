@@ -20,6 +20,7 @@ import com.example.aura.data.model.GroveTree
 import com.example.aura.data.model.JournalEntry
 import com.example.aura.data.model.Quote
 import com.example.aura.data.model.RecurringConfig
+import com.example.aura.data.model.Subtask
 import com.example.aura.data.model.Task
 import com.example.aura.data.model.Template
 import com.example.aura.data.model.TemplateTask
@@ -378,17 +379,24 @@ class AuraViewModel(application: Application) : AndroidViewModel(application) {
                 // Check Grove Growth
                 growActiveTree()
 
-                // If recurring task: create next occurrence
+                // If recurring task: advance deadline on active task and record a completed history entry
                 if (task.recurring != null) {
                     val nextDeadline = calculateNextDeadline(task.deadline, task.recurring)
-                    val nextTask = task.copy(
-                        id = System.currentTimeMillis(),
+                    val advancedTask = task.copy(
                         completed = false,
                         completionDate = null,
                         deadline = nextDeadline
                     )
-                    dbHelper.insertTask(nextTask)
-                    currentTasks = listOf(nextTask) + currentTasks
+                    dbHelper.updateTask(advancedTask)
+
+                    val historyInstance = task.copy(
+                        id = System.currentTimeMillis() + 1,
+                        completed = true,
+                        completionDate = today,
+                        recurring = null
+                    )
+                    dbHelper.insertTask(historyInstance)
+                    currentTasks = _tasks.value.map { if (it.id == taskId) advancedTask else it } + historyInstance
                 }
 
                 // Check Win Modal for high-priority non-recurring tasks
@@ -443,6 +451,11 @@ class AuraViewModel(application: Application) : AndroidViewModel(application) {
                 }
             } else if (daysDiff == 0L) {
                 // Same day, streak intact
+                if (stats.streak == 0) {
+                    val updated = stats.copy(streak = 1, lastActiveDate = today.toString())
+                    prefsRepo.userStats = updated
+                    _userStats.value = updated
+                }
             } else {
                 // Streak was broken, restart
                 val updated = stats.copy(streak = 1, lastActiveDate = today.toString())
@@ -558,13 +571,64 @@ class AuraViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun updateTaskDetails(taskId: Long, text: String, notes: String, tags: List<String>) {
+    fun updateTaskDetails(
+        taskId: Long,
+        text: String,
+        notes: String,
+        tags: List<String>,
+        subtasks: List<Subtask> = emptyList()
+    ) {
         val task = _tasks.value.find { it.id == taskId } ?: return
         viewModelScope.launch(Dispatchers.IO) {
-            val updated = task.copy(text = text, notes = notes, tags = tags)
+            val updated = task.copy(text = text, notes = notes, tags = tags, subtasks = subtasks)
             dbHelper.updateTask(updated)
             _tasks.value = _tasks.value.map { if (it.id == taskId) updated else it }
             _detailTask.value = updated
+        }
+    }
+
+    fun toggleSubtask(taskId: Long, subtaskIndex: Int) {
+        val task = _tasks.value.find { it.id == taskId } ?: return
+        if (subtaskIndex !in task.subtasks.indices) return
+        val updatedSubtasks = task.subtasks.mapIndexed { idx, st ->
+            if (idx == subtaskIndex) st.copy(completed = !st.completed) else st
+        }
+        viewModelScope.launch(Dispatchers.IO) {
+            val updated = task.copy(subtasks = updatedSubtasks)
+            dbHelper.updateTask(updated)
+            _tasks.value = _tasks.value.map { if (it.id == taskId) updated else it }
+            if (_detailTask.value?.id == taskId) {
+                _detailTask.value = updated
+            }
+        }
+    }
+
+    fun addSubtask(taskId: Long, subtaskText: String) {
+        if (subtaskText.isBlank()) return
+        val task = _tasks.value.find { it.id == taskId } ?: return
+        val newSubtask = Subtask(text = subtaskText.trim(), completed = false)
+        val updatedSubtasks = task.subtasks + newSubtask
+        viewModelScope.launch(Dispatchers.IO) {
+            val updated = task.copy(subtasks = updatedSubtasks)
+            dbHelper.updateTask(updated)
+            _tasks.value = _tasks.value.map { if (it.id == taskId) updated else it }
+            if (_detailTask.value?.id == taskId) {
+                _detailTask.value = updated
+            }
+        }
+    }
+
+    fun deleteSubtask(taskId: Long, subtaskIndex: Int) {
+        val task = _tasks.value.find { it.id == taskId } ?: return
+        if (subtaskIndex !in task.subtasks.indices) return
+        val updatedSubtasks = task.subtasks.filterIndexed { idx, _ -> idx != subtaskIndex }
+        viewModelScope.launch(Dispatchers.IO) {
+            val updated = task.copy(subtasks = updatedSubtasks)
+            dbHelper.updateTask(updated)
+            _tasks.value = _tasks.value.map { if (it.id == taskId) updated else it }
+            if (_detailTask.value?.id == taskId) {
+                _detailTask.value = updated
+            }
         }
     }
 

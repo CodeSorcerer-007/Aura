@@ -4,6 +4,7 @@ import android.app.TimePickerDialog
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import java.util.Locale
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.RepeatMode
@@ -26,13 +27,19 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -126,13 +133,17 @@ fun SettingsModal(
             modifier = Modifier
                 .fillMaxSize()
                 .background(Color.Black.copy(alpha = 0.75f))
+                .windowInsetsPadding(WindowInsets.statusBars)
+                .windowInsetsPadding(WindowInsets.navigationBars)
+                .windowInsetsPadding(WindowInsets.ime)
                 .clickable(indication = null, interactionSource = remember { MutableInteractionSource() }) { onClose() }
-                .padding(16.dp),
+                .padding(horizontal = 16.dp, vertical = 10.dp),
             contentAlignment = Alignment.Center
         ) {
             Box(
                 modifier = Modifier
-                    .fillMaxWidth(0.95f)
+                    .fillMaxWidth(0.96f)
+                    .fillMaxHeight(0.92f)
                     .clip(RoundedCornerShape(24.dp))
                     .background(theme.bgSecondaryColor)
                     .border(1.dp, theme.borderColor, RoundedCornerShape(24.dp))
@@ -376,7 +387,7 @@ fun SettingsModal(
                                     val h = parts.getOrNull(0)?.toIntOrNull() ?: 18
                                     val m = parts.getOrNull(1)?.toIntOrNull() ?: 0
                                     TimePickerDialog(context, { _, hourOfDay, minute ->
-                                        val formatted = String.format("%02d:%02d", hourOfDay, minute)
+                                        val formatted = String.format(Locale.US, "%02d:%02d", hourOfDay, minute)
                                         onUpdateShutdownTime(formatted)
                                     }, h, m, true).show()
                                 }
@@ -451,6 +462,8 @@ fun SettingsModal(
                             Text("View Archive", color = theme.textPrimaryColor, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
                         }
                     }
+
+                    Spacer(modifier = Modifier.height(28.dp))
                 }
             }
         }
@@ -544,6 +557,8 @@ fun FocusModal(
             modifier = Modifier
                 .fillMaxSize()
                 .background(Color.Black.copy(alpha = 0.92f))
+                .windowInsetsPadding(WindowInsets.statusBars)
+                .windowInsetsPadding(WindowInsets.navigationBars)
                 .padding(24.dp),
             contentAlignment = Alignment.Center
         ) {
@@ -841,6 +856,8 @@ fun MindfulMinuteModal(
             modifier = Modifier
                 .fillMaxSize()
                 .background(Color.Black.copy(alpha = 0.95f))
+                .windowInsetsPadding(WindowInsets.statusBars)
+                .windowInsetsPadding(WindowInsets.navigationBars)
                 .padding(24.dp),
             contentAlignment = Alignment.Center
         ) {
@@ -899,16 +916,36 @@ fun ThemeCreatorModal(
     var textSecondary by remember { mutableStateOf("9CA3AF") }
     var accent by remember { mutableStateOf("2DD4BF") }
 
-    Dialog(onDismissRequest = onClose) {
+    Dialog(
+        onDismissRequest = onClose,
+        properties = DialogProperties(usePlatformDefaultWidth = false)
+    ) {
         Box(
             modifier = Modifier
-                .fillMaxWidth(0.95f)
-                .clip(RoundedCornerShape(24.dp))
-                .background(theme.bgSecondaryColor)
-                .border(1.dp, theme.borderColor, RoundedCornerShape(24.dp))
-                .padding(20.dp)
+                .fillMaxSize()
+                .background(Color.Black.copy(alpha = 0.75f))
+                .windowInsetsPadding(WindowInsets.statusBars)
+                .windowInsetsPadding(WindowInsets.navigationBars)
+                .windowInsetsPadding(WindowInsets.ime)
+                .clickable(indication = null, interactionSource = remember { MutableInteractionSource() }) { onClose() }
+                .padding(horizontal = 16.dp, vertical = 10.dp),
+            contentAlignment = Alignment.Center
         ) {
-            Column(modifier = Modifier.fillMaxWidth()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth(0.96f)
+                    .fillMaxHeight(0.92f)
+                    .clip(RoundedCornerShape(24.dp))
+                    .background(theme.bgSecondaryColor)
+                    .border(1.dp, theme.borderColor, RoundedCornerShape(24.dp))
+                    .clickable(indication = null, interactionSource = remember { MutableInteractionSource() }) {}
+                    .padding(20.dp)
+            ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState())
+            ) {
                 Text(
                     text = "Create a Theme",
                     color = theme.textPrimaryColor,
@@ -1003,6 +1040,7 @@ fun ThemeCreatorModal(
         }
     }
 }
+}
 
 @Composable
 private fun ColorHexField(label: String, hexValue: String, onValueChange: (String) -> Unit) {
@@ -1067,15 +1105,31 @@ fun ArchiveModal(
 ) {
     if (!isOpen) return
 
-    Dialog(onDismissRequest = onClose) {
+    Dialog(
+        onDismissRequest = onClose,
+        properties = DialogProperties(usePlatformDefaultWidth = false)
+    ) {
         Box(
             modifier = Modifier
-                .fillMaxWidth(0.95f)
-                .clip(RoundedCornerShape(24.dp))
-                .background(theme.bgSecondaryColor)
-                .border(1.dp, theme.borderColor, RoundedCornerShape(24.dp))
-                .padding(20.dp)
+                .fillMaxSize()
+                .background(Color.Black.copy(alpha = 0.75f))
+                .windowInsetsPadding(WindowInsets.statusBars)
+                .windowInsetsPadding(WindowInsets.navigationBars)
+                .windowInsetsPadding(WindowInsets.ime)
+                .clickable(indication = null, interactionSource = remember { MutableInteractionSource() }) { onClose() }
+                .padding(horizontal = 16.dp, vertical = 10.dp),
+            contentAlignment = Alignment.Center
         ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth(0.96f)
+                    .fillMaxHeight(0.88f)
+                    .clip(RoundedCornerShape(24.dp))
+                    .background(theme.bgSecondaryColor)
+                    .border(1.dp, theme.borderColor, RoundedCornerShape(24.dp))
+                    .clickable(indication = null, interactionSource = remember { MutableInteractionSource() }) {}
+                    .padding(20.dp)
+            ) {
             Column(modifier = Modifier.fillMaxWidth()) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -1111,7 +1165,7 @@ fun ArchiveModal(
                     LazyColumn(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(300.dp),
+                            .weight(1f, fill = false),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         items(archivedTasks, key = { it.id }) { task ->
@@ -1155,9 +1209,12 @@ fun ArchiveModal(
                         }
                     }
                 }
+
+                Spacer(modifier = Modifier.height(20.dp))
             }
         }
     }
+}
 }
 
 // --- Share Summary Modal ---
@@ -1189,15 +1246,30 @@ fun ShareSummaryModal(
         }
     }
 
-    Dialog(onDismissRequest = onClose) {
+    Dialog(
+        onDismissRequest = onClose,
+        properties = DialogProperties(usePlatformDefaultWidth = false)
+    ) {
         Box(
             modifier = Modifier
-                .fillMaxWidth(0.92f)
-                .clip(RoundedCornerShape(24.dp))
-                .background(theme.bgSecondaryColor)
-                .border(1.dp, theme.borderColor, RoundedCornerShape(24.dp))
-                .padding(20.dp)
+                .fillMaxSize()
+                .background(Color.Black.copy(alpha = 0.75f))
+                .windowInsetsPadding(WindowInsets.statusBars)
+                .windowInsetsPadding(WindowInsets.navigationBars)
+                .windowInsetsPadding(WindowInsets.ime)
+                .clickable(indication = null, interactionSource = remember { MutableInteractionSource() }) { onClose() }
+                .padding(horizontal = 16.dp, vertical = 10.dp),
+            contentAlignment = Alignment.Center
         ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth(0.95f)
+                    .clip(RoundedCornerShape(24.dp))
+                    .background(theme.bgSecondaryColor)
+                    .border(1.dp, theme.borderColor, RoundedCornerShape(24.dp))
+                    .clickable(indication = null, interactionSource = remember { MutableInteractionSource() }) {}
+                    .padding(20.dp)
+            ) {
             Column(modifier = Modifier.fillMaxWidth()) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -1259,6 +1331,7 @@ fun ShareSummaryModal(
         }
     }
 }
+}
 
 // --- Command Palette Modal ---
 data class CommandItem(
@@ -1290,8 +1363,11 @@ fun CommandPaletteModal(
             modifier = Modifier
                 .fillMaxSize()
                 .background(Color.Black.copy(alpha = 0.8f))
+                .windowInsetsPadding(WindowInsets.statusBars)
+                .windowInsetsPadding(WindowInsets.navigationBars)
+                .windowInsetsPadding(WindowInsets.ime)
                 .clickable(indication = null, interactionSource = remember { MutableInteractionSource() }) { onClose() }
-                .padding(20.dp),
+                .padding(horizontal = 16.dp, vertical = 16.dp),
             contentAlignment = Alignment.TopCenter
         ) {
             Box(
@@ -1394,7 +1470,10 @@ fun SearchModal(
             modifier = Modifier
                 .fillMaxSize()
                 .background(Color.Black.copy(alpha = 0.85f))
-                .padding(20.dp),
+                .windowInsetsPadding(WindowInsets.statusBars)
+                .windowInsetsPadding(WindowInsets.navigationBars)
+                .windowInsetsPadding(WindowInsets.ime)
+                .padding(horizontal = 16.dp, vertical = 12.dp),
             contentAlignment = Alignment.TopCenter
         ) {
             Column(

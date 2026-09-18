@@ -9,6 +9,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -42,6 +43,7 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.aura.data.model.AuraThemeModel
@@ -81,11 +83,11 @@ fun AuraBottomDock(
             )
             .windowInsetsPadding(WindowInsets.ime)
             .windowInsetsPadding(WindowInsets.navigationBars)
-            .padding(horizontal = 16.dp, vertical = 6.dp),
+            .padding(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 10.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        // Floating Bottom Navigation Pill (5 items, equal weight, never clipped!)
+        // Floating Bottom Navigation Pill (Adaptive, never clipped on any screen width!)
         AuraBottomNav(
             currentView = currentView,
             theme = theme,
@@ -107,14 +109,16 @@ fun AuraBottomNav(
     onNavigate: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Box(
+    BoxWithConstraints(
         modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(32.dp))
-            .background(theme.bgSecondaryColor.copy(alpha = 0.88f))
+            .background(theme.bgSecondaryColor.copy(alpha = 0.92f))
             .border(1.dp, theme.borderColor.copy(alpha = 0.6f), RoundedCornerShape(32.dp))
             .padding(horizontal = 4.dp, vertical = 4.dp)
     ) {
+        val isWideScreen = maxWidth >= 480.dp
+
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly,
@@ -127,7 +131,7 @@ fun AuraBottomNav(
                 Box(
                     modifier = Modifier
                         .weight(1f)
-                        .clip(RoundedCornerShape(24.dp))
+                        .clip(RoundedCornerShape(20.dp))
                         .background(
                             if (isSelected) theme.bgSecondaryHoverColor else Color.Transparent
                         )
@@ -135,29 +139,55 @@ fun AuraBottomNav(
                             interactionSource = interactionSource,
                             indication = null
                         ) { onNavigate(item.id) }
-                        .padding(vertical = 8.dp, horizontal = 2.dp),
+                        .padding(vertical = if (isWideScreen) 8.dp else 4.dp, horizontal = 2.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        val iconColor = if (isSelected) theme.textPrimaryColor else theme.textSecondaryColor
-                        when (item.id) {
-                            "flow" -> SunIcon(modifier = Modifier.size(17.dp), tint = iconColor)
-                            "constellations" -> SparklesIcon(modifier = Modifier.size(17.dp), tint = iconColor)
-                            "grove" -> LeafIcon(modifier = Modifier.size(17.dp), tint = iconColor)
-                            "journal" -> BookOpenIcon(modifier = Modifier.size(17.dp), tint = iconColor)
-                            "review" -> BarChartIcon(modifier = Modifier.size(17.dp), tint = iconColor)
+                    val iconColor = if (isSelected) theme.accentColor else theme.textSecondaryColor
+                    val textColor = if (isSelected) theme.textPrimaryColor else theme.textSecondaryColor
+
+                    if (isWideScreen) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            when (item.id) {
+                                "flow" -> SunIcon(modifier = Modifier.size(17.dp), tint = iconColor)
+                                "constellations" -> SparklesIcon(modifier = Modifier.size(17.dp), tint = iconColor)
+                                "grove" -> LeafIcon(modifier = Modifier.size(17.dp), tint = iconColor)
+                                "journal" -> BookOpenIcon(modifier = Modifier.size(17.dp), tint = iconColor)
+                                "review" -> BarChartIcon(modifier = Modifier.size(17.dp), tint = iconColor)
+                            }
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = item.label,
+                                color = textColor,
+                                fontSize = 11.5.sp,
+                                fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Medium,
+                                maxLines = 1
+                            )
                         }
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(
-                            text = item.label,
-                            color = if (isSelected) theme.textPrimaryColor else theme.textSecondaryColor,
-                            fontSize = 11.5.sp,
-                            fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Medium,
-                            maxLines = 1
-                        )
+                    } else {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            when (item.id) {
+                                "flow" -> SunIcon(modifier = Modifier.size(18.dp), tint = iconColor)
+                                "constellations" -> SparklesIcon(modifier = Modifier.size(18.dp), tint = iconColor)
+                                "grove" -> LeafIcon(modifier = Modifier.size(18.dp), tint = iconColor)
+                                "journal" -> BookOpenIcon(modifier = Modifier.size(18.dp), tint = iconColor)
+                                "review" -> BarChartIcon(modifier = Modifier.size(18.dp), tint = iconColor)
+                            }
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text(
+                                text = item.label,
+                                color = textColor,
+                                fontSize = 10.5.sp,
+                                fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Medium,
+                                maxLines = 1,
+                                textAlign = TextAlign.Center
+                            )
+                        }
                     }
                 }
             }

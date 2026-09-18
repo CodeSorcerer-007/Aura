@@ -148,17 +148,35 @@ fun TaskBubble(
                         .padding(end = 12.dp, top = 2.dp)
                         .size(28.dp)
                         .clip(CircleShape)
-                        .background(if (task.completed) Color(0xFF2DD4BF) else Color.Transparent)
+                        .background(
+                            when {
+                                task.completed -> Color(0xFF2DD4BF)
+                                isLocked -> Color(0xFFFBBF24).copy(alpha = 0.15f)
+                                else -> Color.Transparent
+                            }
+                        )
                         .border(
                             width = 2.dp,
-                            color = if (task.completed) Color(0xFF2DD4BF) else theme.textPrimaryColor.copy(alpha = 0.5f),
+                            color = when {
+                                task.completed -> Color(0xFF2DD4BF)
+                                isLocked -> Color(0xFFFBBF24).copy(alpha = 0.8f)
+                                else -> theme.textPrimaryColor.copy(alpha = 0.5f)
+                            },
                             shape = CircleShape
                         )
-                        .clickable(enabled = !isLocked) { onToggle(task.id) },
+                        .clickable {
+                            if (isLocked) {
+                                onOpenDetail(task.id)
+                            } else {
+                                onToggle(task.id)
+                            }
+                        },
                     contentAlignment = Alignment.Center
                 ) {
                     if (task.completed) {
                         CheckIcon(modifier = Modifier.size(16.dp), tint = Color.Black)
+                    } else if (isLocked) {
+                        LinkIcon(modifier = Modifier.size(13.dp), tint = Color(0xFFFBBF24))
                     }
                 }
 

@@ -12,6 +12,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -142,6 +144,8 @@ fun MainScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .windowInsetsPadding(WindowInsets.statusBars)
+                .windowInsetsPadding(WindowInsets.navigationBars)
+                .windowInsetsPadding(WindowInsets.ime)
         ) {
             // Mindful Header (Momentum bar, Quote, Action icons)
             AuraHeader(
@@ -381,6 +385,15 @@ fun MainScreen(
             },
             onOpenAttachment = { att ->
                 viewModel.openAttachment(att)
+            },
+            onToggleSubtask = { id, idx ->
+                viewModel.toggleSubtask(id, idx)
+            },
+            onAddSubtask = { id, text ->
+                viewModel.addSubtask(id, text)
+            },
+            onDeleteSubtask = { id, idx ->
+                viewModel.deleteSubtask(id, idx)
             }
         )
 

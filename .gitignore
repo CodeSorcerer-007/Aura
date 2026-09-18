@@ -13,3 +13,4 @@ aura-android/*.iml
 aura-android/.idea/
 *.hprof
 *.apk
+!aura.apk

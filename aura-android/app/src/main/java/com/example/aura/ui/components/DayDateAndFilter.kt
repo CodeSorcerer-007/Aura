@@ -91,9 +91,9 @@ fun FilterBar(
     FlowRow(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        horizontalArrangement = Arrangement.Center,
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+            .padding(horizontal = 16.dp, vertical = 6.dp),
+        horizontalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterHorizontally),
+        verticalArrangement = Arrangement.spacedBy(6.dp)
     ) {
         // All
         FilterChip(
@@ -103,8 +103,6 @@ fun FilterBar(
             onClick = { onFilterChange(FilterState(type = "all")) }
         )
 
-        Spacer(modifier = Modifier.width(6.dp))
-
         // High Priority
         FilterChip(
             label = "High Priority",
@@ -113,8 +111,6 @@ fun FilterBar(
             onClick = { onFilterChange(FilterState(type = "priority")) }
         )
 
-        Spacer(modifier = Modifier.width(6.dp))
-
         // Due This Week
         FilterChip(
             label = "Due This Week",
@@ -122,8 +118,6 @@ fun FilterBar(
             theme = theme,
             onClick = { onFilterChange(FilterState(type = "due_this_week")) }
         )
-
-        Spacer(modifier = Modifier.width(6.dp))
 
         // Category dropdown
         Box {
@@ -136,7 +130,7 @@ fun FilterBar(
                     .background(if (isCatSelected) theme.textPrimaryColor.copy(alpha = 0.9f) else theme.bgSecondaryColor)
                     .border(1.dp, if (isCatSelected) Color.Transparent else theme.borderColor, RoundedCornerShape(20.dp))
                     .clickable { categoryDropdownOpen = true }
-                    .padding(horizontal = 12.dp, vertical = 6.dp),
+                    .padding(horizontal = 11.dp, vertical = 5.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
@@ -223,12 +217,12 @@ private fun FilterChip(
             .background(if (selected) theme.textPrimaryColor.copy(alpha = 0.9f) else theme.bgSecondaryColor)
             .border(1.dp, if (selected) Color.Transparent else theme.borderColor, RoundedCornerShape(20.dp))
             .clickable { onClick() }
-            .padding(horizontal = 12.dp, vertical = 6.dp)
+            .padding(horizontal = 11.dp, vertical = 5.dp)
     ) {
         Text(
             text = label,
             color = if (selected) theme.bgColor else theme.textSecondaryColor,
-            fontSize = 13.sp,
+            fontSize = 12.5.sp,
             fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal
         )
     }

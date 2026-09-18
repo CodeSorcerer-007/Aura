@@ -14,14 +14,20 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -41,7 +47,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -49,6 +57,7 @@ import com.example.aura.data.model.AuraThemeModel
 import com.example.aura.data.model.AttachmentMeta
 import com.example.aura.data.model.Task
 import com.example.aura.ui.components.AuraIcons
+import com.example.aura.ui.components.CheckIcon
 
 @Composable
 fun TaskDetailModal(
@@ -61,11 +70,15 @@ fun TaskDetailModal(
     onSetDependency: (taskId: Long, dependencyId: Long?) -> Unit,
     onAddAttachment: (taskId: Long) -> Unit,
     onDeleteAttachment: (taskId: Long, attachment: AttachmentMeta) -> Unit,
-    onOpenAttachment: (attachment: AttachmentMeta) -> Unit
+    onOpenAttachment: (attachment: AttachmentMeta) -> Unit,
+    onToggleSubtask: (taskId: Long, index: Int) -> Unit = { _, _ -> },
+    onAddSubtask: (taskId: Long, text: String) -> Unit = { _, _ -> },
+    onDeleteSubtask: (taskId: Long, index: Int) -> Unit = { _, _ -> }
 ) {
     var text by remember { mutableStateOf("") }
     var notes by remember { mutableStateOf("") }
     var tags by remember { mutableStateOf("") }
+    var newSubtaskText by remember { mutableStateOf("") }
     var showDependencySelector by remember { mutableStateOf(false) }
 
     LaunchedEffect(task) {
@@ -91,17 +104,20 @@ fun TaskDetailModal(
             modifier = Modifier
                 .fillMaxSize()
                 .background(Color.Black.copy(alpha = 0.85f))
+                .windowInsetsPadding(WindowInsets.statusBars)
+                .windowInsetsPadding(WindowInsets.navigationBars)
+                .windowInsetsPadding(WindowInsets.ime)
                 .clickable(
                     interactionSource = remember { MutableInteractionSource() },
                     indication = null
                 ) { onClose() }
-                .padding(16.dp)
-                .imePadding(),
+                .padding(horizontal = 16.dp, vertical = 10.dp),
             contentAlignment = Alignment.Center
         ) {
             Box(
                 modifier = Modifier
-                    .fillMaxWidth()
+                    .fillMaxWidth(0.96f)
+                    .fillMaxHeight(0.92f)
                     .clip(RoundedCornerShape(24.dp))
                     .background(theme.bgSecondaryColor)
                     .border(1.dp, theme.borderColor, RoundedCornerShape(24.dp))
@@ -212,6 +228,133 @@ fun TaskDetailModal(
                     }
 
                     Spacer(modifier = Modifier.height(16.dp))
+
+                    // Subtasks Section
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Subtasks (${task.subtasks.size})",
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = theme.textPrimaryColor
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(6.dp))
+
+                    if (task.subtasks.isNotEmpty()) {
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(6.dp),
+                            modifier = Modifier.padding(bottom = 8.dp)
+                        ) {
+                            task.subtasks.forEachIndexed { index, subtask ->
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clip(RoundedCornerShape(10.dp))
+                                        .background(theme.bgColor)
+                                        .border(1.dp, theme.borderColor.copy(alpha = 0.5f), RoundedCornerShape(10.dp))
+                                        .padding(horizontal = 10.dp, vertical = 8.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    // Checkbox circle
+                                    Box(
+                                        modifier = Modifier
+                                            .size(20.dp)
+                                            .clip(CircleShape)
+                                            .background(if (subtask.completed) Color(0xFF2DD4BF) else Color.Transparent)
+                                            .border(
+                                                width = 1.5.dp,
+                                                color = if (subtask.completed) Color(0xFF2DD4BF) else theme.textPrimaryColor.copy(alpha = 0.5f),
+                                                shape = CircleShape
+                                            )
+                                            .clickable { onToggleSubtask(task.id, index) },
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        if (subtask.completed) {
+                                            CheckIcon(modifier = Modifier.size(12.dp), tint = Color.Black)
+                                        }
+                                    }
+
+                                    Spacer(modifier = Modifier.width(10.dp))
+
+                                    Text(
+                                        text = subtask.text,
+                                        fontSize = 13.5.sp,
+                                        color = if (subtask.completed) theme.textSecondaryColor else theme.textPrimaryColor,
+                                        textDecoration = if (subtask.completed) TextDecoration.LineThrough else TextDecoration.None,
+                                        modifier = Modifier.weight(1f)
+                                    )
+
+                                    Box(
+                                        modifier = Modifier
+                                            .clickable { onDeleteSubtask(task.id, index) }
+                                            .padding(4.dp)
+                                    ) {
+                                        AuraIcons.X(
+                                            color = Color(0xFFF43F5E),
+                                            modifier = Modifier.size(14.dp)
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // Add Subtask Input Row
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(38.dp)
+                                .clip(RoundedCornerShape(10.dp))
+                                .background(theme.bgColor)
+                                .border(1.dp, theme.borderColor, RoundedCornerShape(10.dp))
+                                .padding(horizontal = 10.dp),
+                            contentAlignment = Alignment.CenterStart
+                        ) {
+                            BasicTextField(
+                                value = newSubtaskText,
+                                onValueChange = { newSubtaskText = it },
+                                textStyle = TextStyle(color = theme.textPrimaryColor, fontSize = 13.sp),
+                                singleLine = true,
+                                cursorBrush = SolidColor(theme.accentColor),
+                                decorationBox = { inner ->
+                                    if (newSubtaskText.isEmpty()) {
+                                        Text("Add a subtask...", color = theme.textSecondaryColor.copy(alpha = 0.6f), fontSize = 13.sp)
+                                    }
+                                    inner()
+                                }
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Box(
+                            modifier = Modifier
+                                .height(38.dp)
+                                .clip(RoundedCornerShape(10.dp))
+                                .background(theme.accentColor)
+                                .clickable {
+                                    if (newSubtaskText.isNotBlank()) {
+                                        onAddSubtask(task.id, newSubtaskText.trim())
+                                        newSubtaskText = ""
+                                    }
+                                }
+                                .padding(horizontal = 14.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text("+ Add", color = Color.Black, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(6.dp))
 
                     // Attachments Section
                     Row(
@@ -449,16 +592,20 @@ fun DependencySelectorModal(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.Black.copy(alpha = 0.85f))
+            .windowInsetsPadding(WindowInsets.statusBars)
+            .windowInsetsPadding(WindowInsets.navigationBars)
+            .windowInsetsPadding(WindowInsets.ime)
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null
             ) { onClose() }
-            .padding(20.dp),
+            .padding(horizontal = 16.dp, vertical = 10.dp),
         contentAlignment = Alignment.Center
     ) {
         Box(
             modifier = Modifier
-                .fillMaxWidth()
+                .fillMaxWidth(0.96f)
+                .fillMaxHeight(0.85f)
                 .clip(RoundedCornerShape(20.dp))
                 .background(theme.bgSecondaryColor)
                 .border(1.dp, theme.borderColor, RoundedCornerShape(20.dp))
