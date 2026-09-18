@@ -74,6 +74,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
@@ -140,104 +141,261 @@ fun SettingsModal(
                 .padding(horizontal = 16.dp, vertical = 10.dp),
             contentAlignment = Alignment.Center
         ) {
-            Box(
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth(0.96f)
-                    .fillMaxHeight(0.92f)
+                    .fillMaxWidth()
+                    .fillMaxHeight(0.88f)
                     .clip(RoundedCornerShape(24.dp))
                     .background(theme.bgSecondaryColor)
                     .border(1.dp, theme.borderColor, RoundedCornerShape(24.dp))
                     .clickable(indication = null, interactionSource = remember { MutableInteractionSource() }) {}
-                    .padding(20.dp)
             ) {
+                // Fixed Header: Title Bar
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 20.dp, end = 20.dp, top = 20.dp, bottom = 14.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        com.example.aura.ui.components.AuraLogoEmblem(
+                            modifier = Modifier.size(24.dp),
+                            glowAlpha = 0.5f
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "Settings",
+                            color = theme.textPrimaryColor,
+                            fontSize = 22.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                    Box(
+                        modifier = Modifier
+                            .size(32.dp)
+                            .clip(CircleShape)
+                            .clickable { onClose() },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        XIcon(modifier = Modifier.size(20.dp), tint = theme.textSecondaryColor)
+                    }
+                }
+
+                // Scrollable Content
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .weight(1f, fill = false)
                         .verticalScroll(rememberScrollState())
+                        .padding(horizontal = 20.dp)
+                        .padding(bottom = 24.dp)
                 ) {
-                    // Title Bar
+                    // Theme Section Header with active theme name
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            com.example.aura.ui.components.AuraLogoEmblem(
-                                modifier = Modifier.size(24.dp),
-                                glowAlpha = 0.5f
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                text = "Settings",
-                                color = theme.textPrimaryColor,
-                                fontSize = 22.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-                        Box(
-                            modifier = Modifier
-                                .size(32.dp)
-                                .clickable { onClose() },
-                            contentAlignment = Alignment.Center
-                        ) {
-                            XIcon(modifier = Modifier.size(20.dp), tint = theme.textSecondaryColor)
-                        }
+                        Text(
+                            text = "Theme",
+                            color = theme.textPrimaryColor,
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                        val activeThemeName = allThemes.find { it.id == currentThemeId }?.name ?: "Custom"
+                        Text(
+                            text = activeThemeName,
+                            color = theme.accentColor,
+                            fontSize = 12.5.sp,
+                            fontWeight = FontWeight.SemiBold
+                        )
                     }
-
-                    Spacer(modifier = Modifier.height(18.dp))
-
-                    // Theme Section
-                    Text(
-                        text = "Theme",
-                        color = theme.textPrimaryColor,
-                        fontSize = 15.sp,
-                        fontWeight = FontWeight.Bold
-                    )
                     Spacer(modifier = Modifier.height(10.dp))
-                    FlowRow(
+
+                    // Evenly Distributed Full-Width 3-Column Theme Grid
+                    Column(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        allThemes.forEach { t ->
-                            val isSelected = currentThemeId == t.id
-                            Box(
-                                modifier = Modifier
-                                    .width(72.dp)
-                                    .height(44.dp)
-                                    .clip(RoundedCornerShape(10.dp))
-                                    .background(t.bgColor)
-                                    .border(
-                                        width = if (isSelected) 2.dp else 1.dp,
-                                        color = if (isSelected) theme.accentColor else theme.borderColor.copy(alpha = 0.5f),
-                                        shape = RoundedCornerShape(10.dp)
-                                    )
-                                    .clickable { onSelectTheme(t.id) },
-                                contentAlignment = Alignment.Center
+                        val chunks = allThemes.chunked(3)
+                        val lastChunk = chunks.lastOrNull() ?: emptyList()
+                        val completeChunks = if (lastChunk.size == 3) chunks else chunks.dropLast(1)
+
+                        completeChunks.forEach { rowThemes ->
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
-                                Text(
-                                    text = t.name,
-                                    color = t.textPrimaryColor,
-                                    fontSize = 10.5.sp,
-                                    fontWeight = FontWeight.SemiBold,
-                                    textAlign = TextAlign.Center,
-                                    modifier = Modifier.padding(2.dp)
-                                )
+                                rowThemes.forEach { t ->
+                                    val isSelected = currentThemeId == t.id
+                                    Box(
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .height(38.dp)
+                                            .clip(RoundedCornerShape(10.dp))
+                                            .background(t.bgColor)
+                                            .border(
+                                                width = if (isSelected) 2.dp else 1.dp,
+                                                color = if (isSelected) theme.accentColor else theme.borderColor.copy(alpha = 0.5f),
+                                                shape = RoundedCornerShape(10.dp)
+                                            )
+                                            .clickable { onSelectTheme(t.id) },
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Text(
+                                            text = t.name,
+                                            color = t.textPrimaryColor,
+                                            fontSize = 11.sp,
+                                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.SemiBold,
+                                            textAlign = TextAlign.Center,
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis,
+                                            modifier = Modifier.padding(horizontal = 4.dp)
+                                        )
+                                    }
+                                }
                             }
                         }
 
-                        // Theme Creator Launch button
-                        Box(
-                            modifier = Modifier
-                                .width(72.dp)
-                                .height(44.dp)
-                                .clip(RoundedCornerShape(10.dp))
-                                .background(theme.bgColor)
-                                .border(1.dp, theme.accentColor, RoundedCornerShape(10.dp))
-                                .clickable { onOpenThemeCreator() },
-                            contentAlignment = Alignment.Center
-                        ) {
-                            PaintbrushIcon(modifier = Modifier.size(18.dp), tint = theme.accentColor)
+                        if (lastChunk.size == 1) {
+                            val t = lastChunk[0]
+                            val isSelected = currentThemeId == t.id
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .height(38.dp)
+                                        .clip(RoundedCornerShape(10.dp))
+                                        .background(t.bgColor)
+                                        .border(
+                                            width = if (isSelected) 2.dp else 1.dp,
+                                            color = if (isSelected) theme.accentColor else theme.borderColor.copy(alpha = 0.5f),
+                                            shape = RoundedCornerShape(10.dp)
+                                        )
+                                        .clickable { onSelectTheme(t.id) },
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = t.name,
+                                        color = t.textPrimaryColor,
+                                        fontSize = 11.sp,
+                                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.SemiBold,
+                                        textAlign = TextAlign.Center,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis,
+                                        modifier = Modifier.padding(horizontal = 4.dp)
+                                    )
+                                }
+
+                                Row(
+                                    modifier = Modifier
+                                        .weight(2f)
+                                        .height(38.dp)
+                                        .clip(RoundedCornerShape(10.dp))
+                                        .background(theme.bgColor)
+                                        .border(1.dp, theme.accentColor, RoundedCornerShape(10.dp))
+                                        .clickable { onOpenThemeCreator() },
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.Center
+                                ) {
+                                    PaintbrushIcon(modifier = Modifier.size(15.dp), tint = theme.accentColor)
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Text(
+                                        text = "Custom Theme",
+                                        color = theme.accentColor,
+                                        fontSize = 11.5.sp,
+                                        fontWeight = FontWeight.SemiBold
+                                    )
+                                }
+                            }
+                        } else if (lastChunk.size == 2) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                lastChunk.forEach { t ->
+                                    val isSelected = currentThemeId == t.id
+                                    Box(
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .height(38.dp)
+                                            .clip(RoundedCornerShape(10.dp))
+                                            .background(t.bgColor)
+                                            .border(
+                                                width = if (isSelected) 2.dp else 1.dp,
+                                                color = if (isSelected) theme.accentColor else theme.borderColor.copy(alpha = 0.5f),
+                                                shape = RoundedCornerShape(10.dp)
+                                            )
+                                            .clickable { onSelectTheme(t.id) },
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Text(
+                                            text = t.name,
+                                            color = t.textPrimaryColor,
+                                            fontSize = 11.sp,
+                                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.SemiBold,
+                                            textAlign = TextAlign.Center,
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis,
+                                            modifier = Modifier.padding(horizontal = 4.dp)
+                                        )
+                                    }
+                                }
+
+                                Box(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .height(38.dp)
+                                        .clip(RoundedCornerShape(10.dp))
+                                        .background(theme.bgColor)
+                                        .border(1.dp, theme.accentColor, RoundedCornerShape(10.dp))
+                                        .clickable { onOpenThemeCreator() },
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.Center
+                                    ) {
+                                        PaintbrushIcon(modifier = Modifier.size(15.dp), tint = theme.accentColor)
+                                        Spacer(modifier = Modifier.width(4.dp))
+                                        Text(
+                                            text = "Custom",
+                                            color = theme.accentColor,
+                                            fontSize = 11.sp,
+                                            fontWeight = FontWeight.SemiBold
+                                        )
+                                    }
+                                }
+                            }
+                        } else {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(38.dp)
+                                    .clip(RoundedCornerShape(10.dp))
+                                    .background(theme.bgColor)
+                                    .border(1.dp, theme.accentColor, RoundedCornerShape(10.dp))
+                                    .clickable { onOpenThemeCreator() },
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.Center
+                                ) {
+                                    PaintbrushIcon(modifier = Modifier.size(15.dp), tint = theme.accentColor)
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text(
+                                        text = "Create Custom Theme",
+                                        color = theme.accentColor,
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.SemiBold
+                                    )
+                                }
+                            }
                         }
                     }
 
@@ -372,6 +530,7 @@ fun SettingsModal(
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(10.dp))
                             .background(theme.bgColor)
+                            .border(1.dp, theme.borderColor.copy(alpha = 0.5f), RoundedCornerShape(10.dp))
                             .padding(horizontal = 14.dp, vertical = 12.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
@@ -482,6 +641,7 @@ private fun SettingsToggleRow(
             .fillMaxWidth()
             .clip(RoundedCornerShape(10.dp))
             .background(theme.bgColor)
+            .border(1.dp, theme.borderColor.copy(alpha = 0.5f), RoundedCornerShape(10.dp))
             .padding(horizontal = 14.dp, vertical = 6.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
